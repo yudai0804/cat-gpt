@@ -44,8 +44,8 @@ public:
   };
 
 private:
-  uint8_t pin_;
-  uint8_t channnel_;
+  const uint8_t pin_;
+  const uint8_t channnel_;
 
 public:
   Buzzer(const uint8_t pin, const uint8_t channel)
