@@ -31,18 +31,32 @@ public:
     uint8_t pwm_resolution_bit;
     uint32_t pwm_resolution;
   };
+  enum Direction : int8_t { POSITIVE_DIRECTION = 1, NEGATIVE_DIRECTION = -1 };
 
 private:
   float max_output_;
   float output_a_, output_b_;
   uint8_t output_mode_;
   const HardwareConfig hardware_;
+  int8_t direction_a_, direction_b_;
 
 public:
   DRV8835(const HardwareConfig hardware, const float max_output = 1.0f)
       : hardware_(hardware), max_output_(max_output) {
     output_a_ = output_b_ = 0;
     output_mode_ = 0;
+    direction_a_ = direction_b_ = 0;
+  }
+
+  RET_STATUS setDirection(uint8_t direction_a, uint8_t direction_b) {
+    if ((direction_a == 0 || direction_a == 1) &&
+        (direction_b == 0 || direction_b == 1)) {
+      direction_a_ = direction_a;
+      direction_b_ = direction_b;
+      return RET_STATUS_OK;
+    } else {
+      return RET_STATUS_ARGUMENT_ERROR;
+    }
   }
 
   RET_STATUS setMaxOutput(const float max_output) {
@@ -92,6 +106,8 @@ public:
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
     output_a_ = std::min(std::max(output_a, max_output_), -max_output_);
+    // directionを適用
+    output_a_ *= direction_a_;
 
     if (output_a_ > 0) {
       ledcWrite(hardware_.ain1_channel, output_a_ * max_output_);
@@ -111,6 +127,7 @@ public:
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
     output_b_ = std::min(std::max(output_b, max_output_), -max_output_);
+    output_b_ *= direction_b_;
 
     if (output_b_ > 0) {
       ledcWrite(hardware_.bin1_channel, output_b_ * max_output_);
@@ -135,6 +152,8 @@ public:
   float getOutputA() { return output_a_; }
   float getOutputB() { return output_b_; }
   float getMaxOutput() { return max_output_; }
+  uint8_t getDirectionA() { return direction_a_; }
+  uint8_t getDirectionB() { return direction_b_; }
 };
 
 } // namespace peripheral
