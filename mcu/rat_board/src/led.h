@@ -5,11 +5,13 @@
 
 #pragma once
 
+#ifdef TARGET_ESP32
 #include "Arduino.h"
-
 #include "esp32-hal-gpio.h"
-#include "status.h"
+#endif
 #include <stdint.h>
+
+#include "status.h"
 
 namespace peripheral {
 
@@ -28,7 +30,9 @@ public:
     interval_ = 0;
   }
 
-  void init() { pinMode(pin_, OUTPUT); }
+  void init() {
+    pinMode(pin_, OUTPUT);
+  }
 
   void on() { output(1); }
 
@@ -76,4 +80,4 @@ public:
   }
 };
 
-} // namespace peripheral
+}  // namespace peripheral

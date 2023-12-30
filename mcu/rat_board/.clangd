@@ -254,6 +254,7 @@ CompileFlags:
         -Dssize_t=long,
         -D_SSIZE_T_DECLARED,
         -mlong-calls,
+        -DTARGET_ESP32,
     ]
   Remove:
       [

@@ -5,13 +5,18 @@
 
 #pragma once
 
+#ifdef TARGET_ESP32
+#include <Arduino.h>
+
 #include "esp32-hal-gpio.h"
 #include "esp32-hal-ledc.h"
-#include "status.h"
-#include <Arduino.h>
+#endif
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstdlib>
-#include <stdint.h>
+
+#include "status.h"
 
 namespace peripheral {
 
@@ -31,7 +36,8 @@ public:
     uint8_t pwm_resolution_bit;
     uint32_t pwm_resolution;
   };
-  enum Direction : int8_t { POSITIVE_DIRECTION = 1, NEGATIVE_DIRECTION = -1 };
+  enum Direction : int8_t { POSITIVE_DIRECTION = 1,
+                            NEGATIVE_DIRECTION = -1 };
 
 private:
   float max_output_;
@@ -49,8 +55,7 @@ public:
   }
 
   RET_STATUS setDirection(uint8_t direction_a, uint8_t direction_b) {
-    if ((direction_a == 0 || direction_a == 1) &&
-        (direction_b == 0 || direction_b == 1)) {
+    if ((direction_a == 0 || direction_a == 1) && (direction_b == 0 || direction_b == 1)) {
       direction_a_ = direction_a;
       direction_b_ = direction_b;
       return RET_STATUS_OK;
@@ -84,7 +89,6 @@ public:
     // modeの初期化
     pinMode(hardware_.mode_pin, OUTPUT);
     // pwmの初期化
-    // clang-format off
     ledcSetup(hardware_.ain1_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
     ledcSetup(hardware_.ain2_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
     ledcSetup(hardware_.bin1_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
@@ -93,7 +97,6 @@ public:
     ledcAttachPin(hardware_.ain2_pin, hardware_.ain2_channel);
     ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel);
     ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel);
-    // clang-format on
     disableMotorDriver();
   }
 
@@ -108,7 +111,6 @@ public:
     output_a_ = std::min(std::max(output_a, max_output_), -max_output_);
     // directionを適用
     output_a_ *= direction_a_;
-
     if (output_a_ > 0) {
       ledcWrite(hardware_.ain1_channel, output_a_ * max_output_);
       ledcWrite(hardware_.ain2_channel, 0);
@@ -128,7 +130,6 @@ public:
     // c++17に対応していないためstd::clampが使えなかった
     output_b_ = std::min(std::max(output_b, max_output_), -max_output_);
     output_b_ *= direction_b_;
-
     if (output_b_ > 0) {
       ledcWrite(hardware_.bin1_channel, output_b_ * max_output_);
       ledcWrite(hardware_.bin2_channel, 0);
@@ -156,4 +157,4 @@ public:
   uint8_t getDirectionB() { return direction_b_; }
 };
 
-} // namespace peripheral
+}  // namespace peripheral

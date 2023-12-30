@@ -5,11 +5,13 @@
 
 #pragma once
 
+#ifdef TARGET_ESP32
+#include <Arduino.h>
+
 #include "esp32-hal-ledc.h"
 #include "esp32-hal.h"
-#include <Arduino.h>
+#endif
 #include <stdint.h>
-#include <sys/_stdint.h>
 
 namespace peripheral {
 
@@ -46,10 +48,14 @@ public:
 private:
   const uint8_t pin_;
   const uint8_t channnel_;
+  uint32_t frequency_;
+  uint32_t time_;
 
 public:
   Buzzer(const uint8_t pin, const uint8_t channel)
-      : pin_(pin), channnel_(channel) {}
+      : pin_(pin), channnel_(channel) {
+    frequency_ = time_ = 0;
+  }
 
   /**
    * @brief
@@ -64,27 +70,16 @@ public:
   /**
    * @brief beep音を鳴らす
    *
-   * @param music_scale
-   * @param time
-   * @note 割り込み内で呼ばないこと
-   */
-  void beep(const MusicScale music_scale, uint32_t time) {
-    ledcWriteTone(channnel_, music_scale);
-    // TODO vTaskDelayのほうがいいかも
-    delay(time);
-  }
-
-  /**
-   * @brief beep音を鳴らす
-   *
    * @param frequency
    * @param time
    * @note 割り込み内で呼ばないこと
    */
   void beep(const uint32_t frequency, uint32_t time) {
+    frequency_ = frequency;
+    time_ = time;
     // TODO vTaskDelayのほうがいいかも
-    ledcWriteTone(channnel_, frequency);
-    delay(time);
+    ledcWriteTone(channnel_, frequency_);
+    delay(time_);
   }
 };
-} // namespace peripheral
+}  // namespace peripheral
