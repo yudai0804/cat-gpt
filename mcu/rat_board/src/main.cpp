@@ -1,12 +1,12 @@
-#include "VL53L0X.h"
-#include "buzzer.h"
-#include "freertos/projdefs.h"
-#include "led.h"
-#include "switch.h"
 #include <Arduino.h>
 
+#include "VL53L0X.h"
+#include "buzzer.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/projdefs.h"
 #include "freertos/timers.h"
+#include "led.h"
+#include "switch.h"
 
 peripheral::LED led_red(12);
 peripheral::LED led_white(14);
