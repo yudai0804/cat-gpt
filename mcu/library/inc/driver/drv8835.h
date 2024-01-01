@@ -11,12 +11,11 @@
 #include "esp32-hal-gpio.h"
 #include "esp32-hal-ledc.h"
 #endif
-#include <stdint.h>
 
+#include "common/common.h"
 #include <algorithm>
 #include <cstdlib>
-
-#include "common/status.h"
+#include <stdint.h>
 
 namespace driver {
 
@@ -53,54 +52,55 @@ public:
     direction_a_ = direction_b_ = 0;
   }
 
-  RET_STATUS setDirection(uint8_t direction_a, uint8_t direction_b) {
+  RET setDirection(uint8_t direction_a, uint8_t direction_b) {
     if ((direction_a == 0 || direction_a == 1) &&
         (direction_b == 0 || direction_b == 1)) {
       direction_a_ = direction_a;
       direction_b_ = direction_b;
-      return RET_STATUS_OK;
+      return RET_OK;
     } else {
-      return RET_STATUS_ARGUMENT_ERROR;
+      return RET_ARGUMENT_ERROR;
     }
   }
 
-  RET_STATUS setMaxOutput(const float max_output) {
+  RET setMaxOutput(const float max_output) {
     if (max_output < 0.0f || max_output > 1.0f)
-      return RET_STATUS_ARGUMENT_ERROR;
+      return RET_ARGUMENT_ERROR;
 
     max_output_ = max_output;
-    return RET_STATUS_OK;
+    return RET_OK;
   }
 
-  RET_STATUS outputMode(uint8_t is_enable) {
+  RET outputMode(uint8_t is_enable) {
     if (is_enable == 1 || is_enable == 0) {
       output_mode_ = is_enable;
-      digitalWrite(hardware_.mode_pin, output_mode_);
-      return RET_STATUS_OK;
+      DO_ESP32(digitalWrite(hardware_.mode_pin, output_mode_));
+      return RET_OK;
     } else {
-      return RET_STATUS_ARGUMENT_ERROR;
+      return RET_ARGUMENT_ERROR;
     }
   }
 
-  RET_STATUS enableMotorDriver() { return outputMode(1); }
-  RET_STATUS disableMotorDriver() { return outputMode(0); }
+  RET enableMotorDriver() { return outputMode(1); }
+  RET disableMotorDriver() { return outputMode(0); }
 
   void init() {
     // modeの初期化
-    pinMode(hardware_.mode_pin, OUTPUT);
+    DO_ESP32(pinMode(hardware_.mode_pin, OUTPUT));
     // pwmの初期化
-    ledcSetup(hardware_.ain1_channel, hardware_.pwm_frequency,
-              hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.ain2_channel, hardware_.pwm_frequency,
-              hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.bin1_channel, hardware_.pwm_frequency,
-              hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.bin2_channel, hardware_.pwm_frequency,
-              hardware_.pwm_resolution_bit);
-    ledcAttachPin(hardware_.ain1_pin, hardware_.ain1_channel);
-    ledcAttachPin(hardware_.ain2_pin, hardware_.ain2_channel);
-    ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel);
-    ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel);
+    DO_ESP32(ledcSetup(hardware_.ain1_channel, hardware_.pwm_frequency,
+                       hardware_.pwm_resolution_bit));
+    DO_ESP32(ledcSetup(hardware_.ain2_channel, hardware_.pwm_frequency,
+                       hardware_.pwm_resolution_bit));
+    DO_ESP32(ledcSetup(hardware_.bin1_channel, hardware_.pwm_frequency,
+                       hardware_.pwm_resolution_bit));
+    DO_ESP32(ledcSetup(hardware_.bin2_channel, hardware_.pwm_frequency,
+                       hardware_.pwm_resolution_bit));
+    DO_ESP32(ledcAttachPin(hardware_.ain1_pin, hardware_.ain1_channel));
+    DO_ESP32(ledcAttachPin(hardware_.ain2_pin, hardware_.ain2_channel));
+    DO_ESP32(ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel));
+    DO_ESP32(ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel));
+    // 出力をoffにする
     disableMotorDriver();
   }
 
@@ -114,13 +114,12 @@ public:
     // c++17に対応していないためstd::clampが使えなかった
     output_a_ = std::min(std::max(output_a, max_output_), -max_output_);
     // directionを適用
-    output_a_ *= direction_a_;
-    if (output_a_ > 0) {
-      ledcWrite(hardware_.ain1_channel, output_a_ * max_output_);
-      ledcWrite(hardware_.ain2_channel, 0);
+    if (output_a_ * direction_a_ > 0) {
+      DO_ESP32(ledcWrite(hardware_.ain1_channel, (uint32_t)output_a_));
+      DO_ESP32(ledcWrite(hardware_.ain2_channel, 0));
     } else {
-      ledcWrite(hardware_.ain1_channel, 0);
-      ledcWrite(hardware_.ain2_channel, -output_a_ * max_output_);
+      DO_ESP32(ledcWrite(hardware_.ain1_channel, 0));
+      DO_ESP32(ledcWrite(hardware_.ain2_channel, (uint32_t)output_a_));
     }
   }
 
@@ -133,13 +132,12 @@ public:
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
     output_b_ = std::min(std::max(output_b, max_output_), -max_output_);
-    output_b_ *= direction_b_;
-    if (output_b_ > 0) {
-      ledcWrite(hardware_.bin1_channel, output_b_ * max_output_);
-      ledcWrite(hardware_.bin2_channel, 0);
+    if (output_b_ * direction_b_ > 0) {
+      DO_ESP32(ledcWrite(hardware_.bin1_channel, (uint32_t)output_b_));
+      DO_ESP32(ledcWrite(hardware_.bin2_channel, 0));
     } else {
-      ledcWrite(hardware_.bin1_channel, 0);
-      ledcWrite(hardware_.bin2_channel, -output_b_ * max_output_);
+      DO_ESP32(ledcWrite(hardware_.bin1_channel, 0));
+      DO_ESP32(ledcWrite(hardware_.bin2_channel, (uint32_t)output_b_));
     }
   }
 

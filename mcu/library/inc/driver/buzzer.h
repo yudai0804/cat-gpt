@@ -6,11 +6,11 @@
 #pragma once
 
 #ifdef TARGET_ESP32
-#include <Arduino.h>
-
 #include "esp32-hal-ledc.h"
 #include "esp32-hal.h"
+#include <Arduino.h>
 #endif
+#include "common/common.h"
 #include <stdint.h>
 
 namespace driver {
@@ -64,7 +64,7 @@ public:
    */
   void init() {
     // ledcSetup(0, 12800, 10);
-    ledcAttachPin(pin_, channnel_);
+    DO_ESP32(ledcAttachPin(pin_, channnel_));
   }
 
   /**
@@ -78,8 +78,8 @@ public:
     frequency_ = frequency;
     time_ = time;
     // TODO vTaskDelayのほうがいいかも
-    ledcWriteTone(channnel_, frequency_);
-    delay(time_);
+    DO_ESP32(ledcWriteTone(channnel_, frequency_));
+    DO_ESP32(delay(time_));
   }
 };
 } // namespace driver

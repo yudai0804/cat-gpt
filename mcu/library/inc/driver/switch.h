@@ -6,7 +6,9 @@
 #pragma once
 #ifdef TARGET_ESP32
 #include "esp32-hal-gpio.h"
+#include <Arduino.h>
 #endif
+#include "common/common.h"
 #include <stdint.h>
 
 namespace driver {
@@ -37,14 +39,18 @@ public:
     status_ = DETECT_NO;
     time_ = 0;
   }
-  void init() { pinMode(pin_, INPUT); }
+  void init() { DO_ESP32(pinMode(pin_, INPUT)); }
 
   /**
    * @brief
    * @note is_pullup_が何かの間違いで1より大きい値だった場合死ぬので注意
    * @return
    */
-  uint8_t read() { return ((uint8_t)digitalRead(pin_)) ^ is_pullup_; }
+  uint8_t read() {
+    uint8_t ret = 0;
+    DO_ESP32(ret = digitalRead(pin_));
+    return ret ^ is_pullup_;
+  }
 
   void onInterrupt() {
     if (read() == 0) {
