@@ -13,7 +13,7 @@
 #endif
 #include <stdint.h>
 
-namespace peripheral {
+namespace driver {
 
 class Buzzer {
 public:
@@ -82,4 +82,4 @@ public:
     delay(time_);
   }
 };
-}  // namespace peripheral
+} // namespace driver

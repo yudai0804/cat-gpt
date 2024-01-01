@@ -11,9 +11,9 @@
 #endif
 #include <stdint.h>
 
-#include "status.h"
+#include "common/status.h"
 
-namespace peripheral {
+namespace driver {
 
 class LED {
 private:
@@ -30,9 +30,7 @@ public:
     interval_ = 0;
   }
 
-  void init() {
-    pinMode(pin_, OUTPUT);
-  }
+  void init() { pinMode(pin_, OUTPUT); }
 
   void on() { output(1); }
 
@@ -80,4 +78,4 @@ public:
   }
 };
 
-}  // namespace peripheral
+} // namespace driver

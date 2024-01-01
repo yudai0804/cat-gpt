@@ -16,9 +16,9 @@
 #include <algorithm>
 #include <cstdlib>
 
-#include "status.h"
+#include "common/status.h"
 
-namespace peripheral {
+namespace driver {
 
 class DRV8835 {
 public:
@@ -36,8 +36,7 @@ public:
     uint8_t pwm_resolution_bit;
     uint32_t pwm_resolution;
   };
-  enum Direction : int8_t { POSITIVE_DIRECTION = 1,
-                            NEGATIVE_DIRECTION = -1 };
+  enum Direction : int8_t { POSITIVE_DIRECTION = 1, NEGATIVE_DIRECTION = -1 };
 
 private:
   float max_output_;
@@ -55,7 +54,8 @@ public:
   }
 
   RET_STATUS setDirection(uint8_t direction_a, uint8_t direction_b) {
-    if ((direction_a == 0 || direction_a == 1) && (direction_b == 0 || direction_b == 1)) {
+    if ((direction_a == 0 || direction_a == 1) &&
+        (direction_b == 0 || direction_b == 1)) {
       direction_a_ = direction_a;
       direction_b_ = direction_b;
       return RET_STATUS_OK;
@@ -89,10 +89,14 @@ public:
     // modeの初期化
     pinMode(hardware_.mode_pin, OUTPUT);
     // pwmの初期化
-    ledcSetup(hardware_.ain1_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.ain2_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.bin1_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
-    ledcSetup(hardware_.bin2_channel, hardware_.pwm_frequency, hardware_.pwm_resolution_bit);
+    ledcSetup(hardware_.ain1_channel, hardware_.pwm_frequency,
+              hardware_.pwm_resolution_bit);
+    ledcSetup(hardware_.ain2_channel, hardware_.pwm_frequency,
+              hardware_.pwm_resolution_bit);
+    ledcSetup(hardware_.bin1_channel, hardware_.pwm_frequency,
+              hardware_.pwm_resolution_bit);
+    ledcSetup(hardware_.bin2_channel, hardware_.pwm_frequency,
+              hardware_.pwm_resolution_bit);
     ledcAttachPin(hardware_.ain1_pin, hardware_.ain1_channel);
     ledcAttachPin(hardware_.ain2_pin, hardware_.ain2_channel);
     ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel);
@@ -157,4 +161,4 @@ public:
   uint8_t getDirectionB() { return direction_b_; }
 };
 
-}  // namespace peripheral
+} // namespace driver
