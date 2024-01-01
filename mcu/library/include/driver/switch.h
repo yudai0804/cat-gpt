@@ -28,17 +28,14 @@ public:
 
 private:
   static constexpr uint8_t DT_MS = 1;
-  const uint8_t pin_;
-  const uint8_t is_pullup_;
-  Status status_;
-  uint16_t time_;
+  uint8_t pin_ = 0;
+  uint8_t is_pullup_ = 0;
+  Status status_ = DETECT_NO;
+  uint16_t time_ = 0;
 
 public:
   Switch(const uint8_t pin, const uint8_t is_pullup)
-      : pin_(pin), is_pullup_(is_pullup) {
-    status_ = DETECT_NO;
-    time_ = 0;
-  }
+      : pin_(pin), is_pullup_(is_pullup) {}
   void init() { DO_ESP32(pinMode(pin_, INPUT)); }
 
   /**

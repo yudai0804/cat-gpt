@@ -38,19 +38,17 @@ public:
   enum Direction : int8_t { POSITIVE_DIRECTION = 1, NEGATIVE_DIRECTION = -1 };
 
 private:
-  float max_output_;
-  float output_a_, output_b_;
-  uint8_t output_mode_;
-  const HardwareConfig hardware_;
-  int8_t direction_a_, direction_b_;
+  float max_output_ = 1.0f;
+  float output_a_ = 0.0f;
+  float output_b_ = 0.0f;
+  uint8_t output_mode_ = 0;
+  HardwareConfig hardware_;
+  int8_t direction_a_ = 0;
+  int8_t direction_b_ = 0;
 
 public:
   DRV8835(const HardwareConfig hardware, const float max_output = 1.0f)
-      : hardware_(hardware), max_output_(max_output) {
-    output_a_ = output_b_ = 0;
-    output_mode_ = 0;
-    direction_a_ = direction_b_ = 0;
-  }
+      : hardware_(hardware), max_output_(max_output) {}
 
   RET setDirection(uint8_t direction_a, uint8_t direction_b) {
     if ((direction_a == 0 || direction_a == 1) &&

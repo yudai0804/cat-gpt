@@ -18,17 +18,13 @@ namespace driver {
 class LED {
 private:
   static constexpr uint8_t DT_MS = 1;
-  uint16_t time_;
-  uint16_t interval_;
-  const uint8_t pin_;
-  uint8_t status_;
+  uint16_t time_ = 0;
+  uint16_t interval_ = 0;
+  uint8_t pin_ = 0;
+  uint8_t status_ = 0;
 
 public:
-  LED(const uint8_t pin) : pin_(pin) {
-    time_ = 0;
-    status_ = 0;
-    interval_ = 0;
-  }
+  LED(const uint8_t pin) : pin_(pin) {}
   void init() { DO_ESP32(pinMode(pin_, OUTPUT)); }
 
   void output(const uint8_t is_on) {

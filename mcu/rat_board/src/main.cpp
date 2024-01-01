@@ -2,6 +2,7 @@
 
 #include "driver/VL53L0X.h"
 #include "driver/buzzer.h"
+#include "driver/drv8835.h"
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "freertos/FreeRTOS.h"
@@ -12,6 +13,7 @@ driver::LED led_red(12);
 driver::LED led_white(14);
 driver::Switch sw(15, 1);
 driver::Buzzer buzzer(23, 0);
+driver::DRV8835 drv8835();
 
 const uint8_t sda = 16;
 const uint8_t scl = 17;

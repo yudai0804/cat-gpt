@@ -46,16 +46,14 @@ public:
   };
 
 private:
-  const uint8_t pin_;
-  const uint8_t channnel_;
-  uint32_t frequency_;
-  uint32_t time_;
+  uint8_t pin_ = 0;
+  uint8_t channnel_ = 0;
+  uint32_t frequency_ = 0;
+  uint32_t time_ = 0;
 
 public:
   Buzzer(const uint8_t pin, const uint8_t channel)
-      : pin_(pin), channnel_(channel) {
-    frequency_ = time_ = 0;
-  }
+      : pin_(pin), channnel_(channel) {}
 
   /**
    * @brief
