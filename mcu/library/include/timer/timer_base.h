@@ -53,6 +53,8 @@ public:
 
   /**
    * @brief 最後にresetしてからの経過時間を返す
+   * @note
+   * オーバーフロー対策不要と言いながら、実は最後にresetしてからUINT32_MAX経過すると、elapsedTimeが0になるけど、細かいことは気にしない！
    *
    * @return
    */
