@@ -16,17 +16,17 @@
 
 namespace driver {
 
-class LED {
+template <typename T> class LED {
 private:
-  timer::TimerBase *timer_;
+  T timer_;
   timer::time_t interval_ = 0;
   uint8_t pin_ = 0;
   uint8_t status_ = 0;
 
 public:
-  LED(timer::TimerBase *timer) : timer_(timer) {}
+  LED() : timer_() {}
 
-  LED(timer::TimerBase *timer, const uint8_t pin) : timer_(timer), pin_(pin) {}
+  LED(const uint8_t pin) : timer_(), pin_(pin) {}
 
   void init() { DO_ESP32(pinMode(pin_, OUTPUT)); }
 
@@ -51,7 +51,7 @@ public:
     // interval=0の場合はここで設定された出力がonInterrupt内で更新されることはない
     off();
     // タイマーをリセット
-    timer_->reset();
+    timer_.reset();
   }
 
   /**
@@ -59,14 +59,22 @@ public:
    * またこの関数を呼ぶ際は割り込み内でタイマーの更新処理が終わった後に呼ぶこと
    */
   void onInterrupt(void) {
-    bool is_longer_than_interval = (timer_->getElapsedTime() >= interval_);
+    bool is_longer_than_interval = (timer_.getElapsedTime() >= interval_);
     bool is_timer_enable = (interval_ != 0);
     if (is_longer_than_interval && is_timer_enable) {
       // xorをすると0と1が交互に切り替わって、Lチカの動作になる
       status_ ^= 0x01;
       output(status_);
-      timer_->reset();
+      timer_.reset();
     }
+  }
+
+  uint8_t getStatus() { return status_; }
+  void debug() {
+    bool is_longer_than_interval = (timer_.getElapsedTime() >= interval_);
+    bool is_timer_enable = (interval_ != 0);
+    printf("longer = %d, enable = %d\r\n", is_longer_than_interval,
+           is_timer_enable);
   }
 };
 
