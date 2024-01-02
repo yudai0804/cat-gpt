@@ -61,7 +61,7 @@ public:
    * 周波数や分解能の設定はledcWriteTone呼び出し時に行われるため、この関数内では行わなくてよい
    */
   void init() {
-    // ledcSetup(0, 12800, 10);
+    DO_ESP32(ledcSetup(0, 12800, 10));
     DO_ESP32(ledcAttachPin(pin_, channnel_));
   }
 

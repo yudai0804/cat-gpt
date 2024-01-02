@@ -98,8 +98,8 @@ public:
     DO_ESP32(ledcAttachPin(hardware_.ain2_pin, hardware_.ain2_channel));
     DO_ESP32(ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel));
     DO_ESP32(ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel));
-    // 出力をoffにする
-    disableMotorDriver();
+    // 出力をonにする
+    enableMotorDriver();
   }
 
   /**
@@ -110,14 +110,16 @@ public:
   void outputA(const float output_a) {
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
-    output_a_ = std::min(std::max(output_a, max_output_), -max_output_);
+    output_a_ = std::max(std::min(output_a, max_output_), -max_output_);
     // directionを適用
     if (output_a_ * direction_a_ > 0) {
-      DO_ESP32(ledcWrite(hardware_.ain1_channel, (uint32_t)output_a_));
+      DO_ESP32(ledcWrite(hardware_.ain1_channel,
+                         (uint32_t)output_a_ * hardware_.pwm_resolution));
       DO_ESP32(ledcWrite(hardware_.ain2_channel, 0));
     } else {
       DO_ESP32(ledcWrite(hardware_.ain1_channel, 0));
-      DO_ESP32(ledcWrite(hardware_.ain2_channel, (uint32_t)output_a_));
+      DO_ESP32(ledcWrite(hardware_.ain2_channel,
+                         (uint32_t)output_a_ * hardware_.pwm_resolution));
     }
   }
 
@@ -129,13 +131,15 @@ public:
   void outputB(const float output_b) {
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
-    output_b_ = std::min(std::max(output_b, max_output_), -max_output_);
+    output_b_ = std::max(std::min(output_b, max_output_), -max_output_);
     if (output_b_ * direction_b_ > 0) {
-      DO_ESP32(ledcWrite(hardware_.bin1_channel, (uint32_t)output_b_));
+      DO_ESP32(ledcWrite(hardware_.bin1_channel,
+                         (uint32_t)output_b_ * hardware_.pwm_resolution));
       DO_ESP32(ledcWrite(hardware_.bin2_channel, 0));
     } else {
       DO_ESP32(ledcWrite(hardware_.bin1_channel, 0));
-      DO_ESP32(ledcWrite(hardware_.bin2_channel, (uint32_t)output_b_));
+      DO_ESP32(ledcWrite(hardware_.bin2_channel,
+                         (uint32_t)output_b_ * hardware_.pwm_resolution));
     }
   }
 
