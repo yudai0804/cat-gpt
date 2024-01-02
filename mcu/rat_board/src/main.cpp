@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "driver/buzzer.h"
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "freertos/FreeRTOS.h"
@@ -7,6 +8,7 @@
 #include "timer/timer_base.h"
 
 TimerHandle_t timer_1ms;
+driver::Buzzer buzzer(23, 0);
 driver::LED<timer::Timer1ms> led_red(12);
 driver::LED<timer::Timer1ms> led_white(14);
 driver::Switch<timer::Timer1ms> limit_switch(15, 1);
@@ -24,11 +26,13 @@ void setup() {
   led_red.init();
   led_white.init();
   limit_switch.init();
+  buzzer.init();
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   led_red.blinkByInterval(500);
   led_white.blinkByFrequency(1);
   xTimerStart(timer_1ms, 0);
+  // buzzer.beep(driver::Buzzer::F4, 1000);
 }
 
 void loop() {
