@@ -22,12 +22,11 @@ void setup() {
   led_white.init();
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
-  led_red.blink(500);
-  led_white.blink(100);
+  led_red.blinkByInterval(500);
+  led_white.blinkByFrequency(1);
   xTimerStart(timer_1ms, 0);
 }
 
 void loop() {
   Serial.printf("time = %d, red = %d, white = %d\r\n", timer::Timer1ms_getCurrentTime(), led_red.getStatus(), led_white.getStatus());
-  // led_white.debug();
 }

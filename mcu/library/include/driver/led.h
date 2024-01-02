@@ -45,13 +45,32 @@ public:
    * @details interval=500の場合、500ms ONになって、500ms 0FFになる
    * intarval=0の場合、消灯する
    */
-  void blink(const timer::time_t interval) {
+  RET blinkByInterval(const timer::time_t interval) {
     interval_ = interval;
     // 出力をOFFにする。
     // interval=0の場合はここで設定された出力がonInterrupt内で更新されることはない
     off();
     // タイマーをリセット
     timer_.reset();
+    return RET_OK;
+  }
+
+  RET blinkByFrequency(const float frequency) {
+    if (frequency > 1000)
+      return RET_ARGUMENT_ERROR;
+
+    // 0除算対策
+    if (frequency == 0) {
+      interval_ = 0;
+    } else {
+      // 1 / f * 1000 / 2
+      interval_ = (uint16_t)(500.0f / (float)frequency);
+    }
+    // 出力をoffにする
+    off();
+    // タイマーをリセット
+    timer_.reset();
+    return RET_OK;
   }
 
   /**
@@ -70,12 +89,6 @@ public:
   }
 
   uint8_t getStatus() { return status_; }
-  void debug() {
-    bool is_longer_than_interval = (timer_.getElapsedTime() >= interval_);
-    bool is_timer_enable = (interval_ != 0);
-    printf("longer = %d, enable = %d\r\n", is_longer_than_interval,
-           is_timer_enable);
-  }
 };
 
 } // namespace driver
