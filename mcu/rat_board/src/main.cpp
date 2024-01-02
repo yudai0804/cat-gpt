@@ -25,8 +25,7 @@ driver::DRV8835::HardwareConfig drv8835_hardware_config = {
     .pwm_resolution_bit = 10,
     .pwm_resolution = 1024};
 driver::DRV8835 drv8835(drv8835_hardware_config);
-driver::LED<timer::Timer1ms>
-    led_red(12);
+driver::LED<timer::Timer1ms> led_red(12);
 driver::LED<timer::Timer1ms> led_white(14);
 driver::Switch<timer::Timer1ms> limit_switch(15, 1);
 
