@@ -9,11 +9,11 @@
 #include <Arduino.h>
 #endif
 #include "common/common.h"
+#include "timer/timer_base.h"
 #include <stdint.h>
 
 namespace driver {
-
-class Switch {
+template <typename T> class Switch {
 public:
   enum Status : uint8_t {
     DETECT_NO = 0,
@@ -27,16 +27,19 @@ public:
   };
 
 private:
-  static constexpr uint8_t DT_MS = 1;
+  T timer_;
   uint8_t pin_ = 0;
   uint8_t is_pullup_ = 0;
   Status status_ = DETECT_NO;
-  uint16_t time_ = 0;
 
 public:
   Switch(const uint8_t pin, const uint8_t is_pullup)
-      : pin_(pin), is_pullup_(is_pullup) {}
-  void init() { DO_ESP32(pinMode(pin_, INPUT)); }
+      : timer_(), pin_(pin), is_pullup_(is_pullup) {}
+
+  void init() {
+    // pinModeやらなくても、GPIO入力なら動くみたい
+    DO_ESP32(pinMode(pin_, INPUT));
+  }
 
   /**
    * @brief
@@ -51,30 +54,30 @@ public:
 
   void onInterrupt() {
     if (read() == 0) {
-      time_ = 0;
+      timer_.reset();
       status_ = DETECT_NO;
       return;
     }
-    if (time_ < 0xffff)
-      time_ += DT_MS;
+    timer::time_t time = timer_.getElapsedTime();
     // センサーが反応した時間に応じてstatus_を更新
-    if (time_ < 5) {
+    if (time < 5) {
       status_ = DETECT_UNDER_5MS;
-    } else if (time_ < 10) {
+    } else if (time < 10) {
       status_ = DETECT_UNDER_10MS;
-    } else if (time_ < 25) {
+    } else if (time < 25) {
       status_ = DETECT_UNDER_25MS;
-    } else if (time_ < 100) {
+    } else if (time < 100) {
       status_ = DETECT_UNDER_100MS;
-    } else if (time_ < 250) {
+    } else if (time < 250) {
       status_ = DETECT_UNDER_250MS;
-    } else if (time_ < 1000) {
+    } else if (time < 1000) {
       status_ = DETECT_UNDER_1000MS;
     } else {
       status_ = DETECT_MORE_1000MS;
     }
   }
   Switch::Status getStatus() { return status_; }
+  timer::time_t getTime() { return timer_.getElapsedTime(); }
 };
 
 } // namespace driver
