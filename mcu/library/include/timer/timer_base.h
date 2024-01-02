@@ -5,9 +5,14 @@
 
 #pragma once
 
+#include "sys/_stdint.h"
 #include <stdint.h>
+#include <sys/types.h>
 
 namespace timer {
+
+using time_t = uint32_t;
+
 /**
  * @class TimerBase
  * @note 経過時間を計測するだけなので、uint32_tのオーバーフロー対策は不要
@@ -22,34 +27,32 @@ namespace timer {
  */
 class TimerBase {
 protected:
-  uint32_t current_ = 0;
-  uint32_t previous_ = 0;
-  uint32_t dt_ = 0;
+  time_t previous_ = 0;
+  time_t dt_ = 0;
 
 public:
   TimerBase() {}
-  TimerBase(const uint32_t dt) : dt_(dt) {}
-  virtual void update() = 0;
+  TimerBase(const time_t dt) : dt_(dt) {}
 
   /**
    * @brief タイマーをリセットする
    */
-  void reset() { previous_ = current_; }
+  virtual void reset() { previous_ = getCurrentTime(); }
 
   /**
    * @brief dtを返す。dtが設定されていない場合は0を返す。
    *
    * @return
    */
-  uint32_t getDT() { return dt_; }
+  time_t getDT() { return dt_; }
 
   /**
    * @brief 現在時刻を返す
    *
    * @return
    */
-  uint32_t getCurrentTime() { return current_; }
-  uint32_t getPreviousTime() { return previous_; }
+  virtual time_t getCurrentTime() = 0;
+  time_t getPreviousTime() { return previous_; }
 
   /**
    * @brief 最後にresetしてからの経過時間を返す
@@ -58,6 +61,6 @@ public:
    *
    * @return
    */
-  uint32_t getElapsedTime() { return current_ - previous_; }
+  time_t getElapsedTime() { return getCurrentTime() - previous_; }
 };
 } // namespace timer
