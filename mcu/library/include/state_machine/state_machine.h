@@ -9,6 +9,8 @@
 
 #include <functional>
 
+#include "state_machine/state_name.h"
+
 namespace state_machine {
 
 using state_t = uint8_t;
@@ -19,6 +21,13 @@ struct State {
   std::function<void(void)> function;
 };
 
+/*
+今回のシステムでは行わないが、大規模なシステムの場合
+ステートが切り替わるタイミングで、様々なことを行う。
+その場合、StateMachineクラスを継承して使うとよい。
+今回は複雑なことは行わないため、StateMachineクラスをそのまま使用する。
+*/
+
 class StateMachine {
 private:
   State previous_state_;
@@ -26,8 +35,8 @@ private:
 
   State getIdleState() {
     State ret_state{
-        .main = static_cast<state_t>(MainState::Idle),
-        .sub = static_cast<state_t>(IdleSubState::Idle),
+        .main = static_cast<state_t>(main_state::Idle),
+        .sub = static_cast<state_t>(sub_state::idle::Idle),
         .function = [] {
           printf("called idle function.\r\n");
         }};
@@ -39,17 +48,22 @@ public:
     previous_state_ = current_state_ = getIdleState();
   }
 
-  void setCurrentState(State current) {
-    current_state_ = current;
-  }
-
   void changeState(State next, uint8_t is_printf = 1) {
     previous_state_ = current_state_;
     current_state_ = next;
     if (is_printf) {
-      printf("main = %d, sub = %d\r\n", current_state_.main,
+      printf("main = 0x%x, sub = 0x%x\r\n", current_state_.main,
              current_state_.sub);
     }
+  }
+
+  void changeState(state_t next_main, state_t next_sub,
+                   std::function<void(void)> next_func, uint8_t is_printf = 1) {
+    State tmp = {.main = next_main, .sub = next_sub, .function = next_func};
+    changeState(tmp, is_printf);
+  }
+
+  void process() {
     current_state_.function();
   }
 
