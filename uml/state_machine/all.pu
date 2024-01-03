@@ -1,0 +1,11 @@
+@startuml
+[*] --> Idle
+Idle --> Search : 一定時間おきにイベント発生
+Idle --> Error : 通信エラー
+Idle --> Error : 移動不可
+Search --> Idle : No Detect
+Search --> CaughtByCat
+Search --> Error : 移動不可
+CaughtByCat --> Feed
+Feed --> Idle
+@enduml

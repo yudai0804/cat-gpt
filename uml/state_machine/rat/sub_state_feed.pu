@@ -1,0 +1,8 @@
+@startuml
+
+[*] --> Start
+Start --> Feed
+Feed : ratは何もしない
+Feed --> Finish
+Finish --> [*]
+@enduml

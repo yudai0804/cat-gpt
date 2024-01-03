@@ -1,0 +1,16 @@
+@startuml
+[*] --> Start
+Start --> Search
+Search : search_mode:探索動作を示す
+Search --> DetectObstacle
+DetectObstacle --> AvoidObstacle
+AvoidObstacle --> Search
+Search --> AppelToCat : 時間経過で猫にアピール
+AppelToCat --> Search
+AppelToCat : appel_mode:アピールの種類を示す
+Search --> Error : 移動できない
+Search --> Finish
+Error --> [*]
+Finish --> [*]
+
+@enduml

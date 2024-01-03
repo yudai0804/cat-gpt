@@ -1,0 +1,7 @@
+@startuml
+
+[*] --> Start
+Start --> Caught
+Caught --> Finish : 捕まったことを通知
+Finish --> [*]
+@enduml
