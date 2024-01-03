@@ -9,17 +9,9 @@
 
 #include <functional>
 
-#include "state_machine/state_name.h"
+#include "state_machine/state.h"
 
 namespace state_machine {
-
-using state_t = uint8_t;
-
-struct State {
-  state_t main;
-  state_t sub;
-  std::function<void(void)> function;
-};
 
 /*
 今回のシステムでは行わないが、大規模なシステムの場合
@@ -35,8 +27,8 @@ private:
 
   State getIdleState() {
     State ret_state{
-        .main = static_cast<state_t>(main_state::Idle),
-        .sub = static_cast<state_t>(sub_state::idle::Idle),
+        .main = main_state::Idle,
+        .sub = idle::sub_state::Idle,
         .function = [] {
           printf("called idle function.\r\n");
         }};
