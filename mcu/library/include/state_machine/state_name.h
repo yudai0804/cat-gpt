@@ -10,12 +10,16 @@
 namespace state_machine {
 
 enum class MainState : state_t {
-  None,
+  Idle,
   Serch,
   Suspend,
   CaughtByCat,
   Feed,
   Error,
+};
+
+enum class IdleSubState : state_t {
+  Idle
 };
 
 enum class SerchSubState : state_t {

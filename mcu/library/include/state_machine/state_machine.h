@@ -4,9 +4,10 @@
  */
 
 #pragma once
-#include <functional>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <functional>
 
 namespace state_machine {
 
@@ -22,14 +23,29 @@ class StateMachine {
 private:
   State previous_state_;
   State current_state_;
-  State next_state_;
+
+  State getIdleState() {
+    State ret_state{
+        .main = static_cast<state_t>(MainState::Idle),
+        .sub = static_cast<state_t>(IdleSubState::Idle),
+        .function = [] {
+          printf("called idle function.\r\n");
+        }};
+    return ret_state;
+  }
 
 public:
-  StateMachine() {}
+  StateMachine() {
+    previous_state_ = current_state_ = getIdleState();
+  }
+
+  void setCurrentState(State current) {
+    current_state_ = current;
+  }
+
   void changeState(State next, uint8_t is_printf = 1) {
     previous_state_ = current_state_;
-    current_state_ = next_state_;
-    next_state_ = next;
+    current_state_ = next;
     if (is_printf) {
       printf("main = %d, sub = %d\r\n", current_state_.main,
              current_state_.sub);
@@ -39,6 +55,5 @@ public:
 
   State getPreviousState() { return previous_state_; }
   State getCurrentState() { return current_state_; }
-  State getNextState() { return next_state_; }
 };
-} // namespace state_machine
+}  // namespace state_machine
