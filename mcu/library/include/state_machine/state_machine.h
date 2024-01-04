@@ -24,12 +24,11 @@ using state_t = uint8_t;
 struct State {
   state_t main;
   state_t sub;
+  const char* name;
   void (*function)(void);
 };
 
-constexpr State createState(state_t main, state_t sub, void (*func)(void)) {
-  return {.main = main, .sub = sub, .function = func};
-}
+extern State* state_list[];
 
 class StateMachine {
 private:
@@ -42,12 +41,11 @@ public:
     current_state_ = current;
   }
 
-  void changeState(State next, uint8_t is_printf = 1) {
+  void changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
     previous_state_ = current_state_;
-    current_state_ = next;
+    current_state_ = state_list[main][sub];
     if (is_printf) {
-      printf("main = 0x%x, sub = 0x%x\r\n", current_state_.main,
-             current_state_.sub);
+      printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
     }
   }
 

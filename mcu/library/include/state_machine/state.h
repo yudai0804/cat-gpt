@@ -10,25 +10,22 @@
 namespace state_machine {
 
 namespace main_state {
-
 enum Name : state_t {
-  Idle = 0x0,
+  Idle,
   Search,
   Suspend,
   CaughtByCat,
   Feed,
-  Error = 0x8,
+  Error,
 };
+}
 
-}  // namespace main_state
-
-// 万が一違うステートを代入してしまっても大丈夫なように、同じ値のステートは存在しないようになっている。
 namespace idle {
-
 namespace sub_state {
 enum Name : state_t {
-  Idle = 0x00,
+  Idle,
 };
+
 }  // namespace sub_state
 
 void idle_process();
@@ -39,7 +36,7 @@ namespace search {
 
 namespace sub_state {
 enum Name : state_t {
-  Start = 0x10,
+  Start,
   Search,
   DetectObstacle,
   AvoidObstacle,
@@ -61,7 +58,7 @@ namespace caught_by_cat {
 
 namespace sub_state {
 enum Name : state_t {
-  Start = 0x20,
+  Start,
   Caught,
   Finish,
 };
@@ -77,7 +74,7 @@ namespace feed {
 
 namespace sub_state {
 enum Name : state_t {
-  Start = 0x30,
+  Start,
   AppelToCat,
   Feed,
   Finish,
@@ -96,7 +93,7 @@ namespace error {
 
 namespace sub_state {
 enum Name : state_t {
-  CanNotMove = 0x80,
+  CanNotMove,
   CommunicationFailed
 };
 }
