@@ -31,6 +31,8 @@ public:
   Trapezoid(float v_max, float a)
       : v_max_(v_max), a_(a) {}
 
+  void reset() { v_ = 0.0f; }
+
   void setAccel(float a) {
     if (a > 0.0f) a_ = a;
   }

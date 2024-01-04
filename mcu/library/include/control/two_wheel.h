@@ -11,6 +11,11 @@
 
 namespace control {
 
+/**
+ * @class TwoWheel
+ * @ref https://www.mech.tohoku-gakuin.ac.jp/rde/contents/course/robotics/wheelrobot.html
+ *
+ */
 class TwoWheel {
 private:
   float vr_ = 0.0f;
