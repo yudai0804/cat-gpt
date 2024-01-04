@@ -9,21 +9,6 @@
 
 namespace state_machine {
 
-using state_t = uint8_t;
-
-// 当初std::functionを使用する予定だったが、std::functionはメモリの動的確保が行われるらしいのでやめた。
-// 今回はラムダ式等を使う予定はなかったため、関数ポインタで行うことにした。
-
-struct State {
-  state_t main;
-  state_t sub;
-  void (*function)(void);
-};
-
-constexpr State createState(state_t main, state_t sub, void (*func)(void)) {
-  return {.main = main, .sub = sub, .function = func};
-}
-
 namespace main_state {
 
 enum Name : state_t {
