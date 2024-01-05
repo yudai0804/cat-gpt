@@ -1,8 +1,8 @@
 @startuml
 [*] --> Idle
+note "IdleからCaughtByCatに遷移すると\n複雑になるので行わない" as N1
 Idle --> Search : 一定時間おきにイベント発生
 Idle --> Error : 通信エラー
-Idle --> Error : 移動不可
 Search --> Idle : No Detect
 Search --> CaughtByCat
 Search --> Error : 移動不可
