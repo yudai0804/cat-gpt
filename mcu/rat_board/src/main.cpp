@@ -5,6 +5,8 @@
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "freertos/FreeRTOS.h"
+#include "state_machine/state.h"
+#include "state_machine/state_machine.h"
 #include "timer/timer_1ms.h"
 #include "timer/timer_base.h"
 
