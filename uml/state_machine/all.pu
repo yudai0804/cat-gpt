@@ -1,7 +1,8 @@
 @startuml
 [*] --> Idle
 note "IdleからCaughtByCatに遷移すると\n複雑になるので行わない" as N1
-Idle --> Search : 通信が確立しているときのみ\n一定時間おきにイベント発生
+Idle --> Search : 一定時間おきにイベント発生
+note right of Idle : 通信が途切れた時はどのステートにいても、\nIdleステートに飛ばされる
 Search --> Idle : No Detect
 Search --> CaughtByCat
 CaughtByCat --> Feed

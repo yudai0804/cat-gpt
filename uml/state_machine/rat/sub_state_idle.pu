@@ -1,0 +1,10 @@
+@startuml
+
+[*] --> Idle : 正常
+[*] --> WaitForConnection : 通信エラー
+Idle --> WaitForConnection : 通信エラー
+WaitForConnection --> Idle : 通信回復
+Idle --> [*]
+WaitForConnection --> [*]
+
+@enduml
