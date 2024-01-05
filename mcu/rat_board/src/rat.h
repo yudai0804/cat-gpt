@@ -6,6 +6,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/_timeval.h>
 
 #include "control/trapezoid.h"
 #include "control/two_wheel.h"
@@ -15,10 +16,34 @@
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "driver/tof.h"
+#include "state_machine/state.h"
+#include "state_machine/state_machine.h"
 #include "timer/timer_1ms.h"
 #include "timer/timer_base.h"
 
 namespace rat {
+
+static constexpr timer::time_t SEARCH_MAX_TIME = 60 * 10 * 1000;  // 単位はms
+
+struct Information {
+private:
+  bool is_connect_;
+  int search_mode_;
+  int appel_mode_;
+
+public:
+  Information() {
+    is_connect_ = 0;
+    search_mode_ = 0;
+    appel_mode_ = 0;
+  }
+  void setIsConnect(bool is_connect) { is_connect_ = is_connect; }
+  void setSearchMode(int search_mode) { search_mode_ = search_mode; }
+  void setAppelMode(int appel_mode) { appel_mode_ = appel_mode; }
+  bool getIsConnect() { return is_connect_; }
+  int getSearchMode() { return search_mode_; }
+  int getAppelMode() { return appel_mode_; }
+};
 
 class Hardware {
 public:
@@ -118,3 +143,4 @@ public:
 }  // namespace rat
 
 extern rat::Hardware hardware;
+extern rat::Information information;

@@ -6,3 +6,4 @@
 #include "rat.h"
 
 rat::Hardware hardware;
+rat::Information information;
