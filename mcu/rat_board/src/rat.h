@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <sys/_stdint.h>
+#include <stdint.h>
 
 #include "control/trapezoid.h"
 #include "control/two_wheel.h"
@@ -20,8 +20,7 @@
 
 namespace rat {
 
-template <typename T>
-class Rat {
+class Hardware {
 public:
   static constexpr float NORMAL_VELOCITY = 0.5f;
   static constexpr float NORMAL_OMEGA = 0.5f;
@@ -53,7 +52,7 @@ public:
   control::TwoWheel two_wheel_{1.0f};
 
 public:
-  Rat() {}
+  Hardware() {}
   void init() {
     Serial.begin(115200);
     Wire.begin(16, 17, 100000);
@@ -117,3 +116,5 @@ public:
   driver::SwitchStatus getLimitSwitch() { return limit_switch_.getStatus(); }
 };
 }  // namespace rat
+
+extern rat::Hardware hardware;

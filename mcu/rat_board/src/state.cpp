@@ -5,11 +5,14 @@
 
 #include "state_machine/state.h"
 
+#include "rat.h"
+#include "timer/timer_1ms.h"
+
 namespace state_machine {
 
 static State idle_state_list[] = {
     {.main = main_state::Idle, .sub = idle::sub_state::Idle, .name = "Idle::Idle", .function = idle::idle_process},
-};
+    {.main = main_state::Idle, .sub = idle::sub_state::WaitForConnection, .name = "Idle::WaitForConnection", .function = idle::wait_for_connection_process}};
 
 static State search_state_list[] = {
     {.main = main_state::Search, .sub = search::sub_state::Start, .name = "Search::Start", .function = search::start_process},
@@ -34,14 +37,15 @@ static State feed_state_list[] = {
 };
 
 static State error_state_list[] = {
-    {.main = main_state::Error, .sub = error::sub_state::CanNotMove, .name = "Error::CanNotMove", .function = error::can_not_move_process},
-    {.main = main_state::Error, .sub = error::sub_state::CommunicationFailed, .name = "Error::CommunicationFailed", .function = error::communication_failed_process}};
-
+    {.main = main_state::Error, .sub = error::sub_state::Error, .name = "Error::Error", .function = error::error_process}};
 State *state_list[] = {idle_state_list, search_state_list, caught_by_cat_state_list, feed_state_list, error_state_list};
 
 namespace idle {
 
 void idle_process() {
+}
+
+void wait_for_connection_process() {
 }
 
 }  // namespace idle
@@ -100,10 +104,7 @@ void finish_process() {
 
 namespace error {
 
-void can_not_move_process() {
-}
-
-void communication_failed_process() {
+void error_process() {
 }
 
 }  // namespace error

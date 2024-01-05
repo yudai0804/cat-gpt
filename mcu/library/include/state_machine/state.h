@@ -24,11 +24,13 @@ namespace idle {
 namespace sub_state {
 enum Name : state_t {
   Idle,
+  WaitForConnection,
 };
 
 }  // namespace sub_state
 
 void idle_process();
+void wait_for_connection_process();
 
 }  // namespace idle
 
@@ -93,13 +95,11 @@ namespace error {
 
 namespace sub_state {
 enum Name : state_t {
-  CanNotMove,
-  CommunicationFailed
+  Error,
 };
 }
 
-void can_not_move_process();
-void communication_failed_process();
+void error_process();
 
 }  // namespace error
 
