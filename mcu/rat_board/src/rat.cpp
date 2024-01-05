@@ -3,7 +3,8 @@
  * @brief
  */
 
-#include "rat.h"
+#include "rat_hardware.h"
+#include "rat_information.h"
 
-rat::Hardware hardware;
-rat::Information information;
+rat::Hardware rat_hardware;
+rat::Information rat_information;
