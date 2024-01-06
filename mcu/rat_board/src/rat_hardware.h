@@ -14,7 +14,7 @@
 #include "driver/drv8835.h"
 #include "driver/led.h"
 #include "driver/switch.h"
-#include "driver/tof.h"
+#include "driver/wrapper/tof.h"
 #include "timer/timer_1ms.h"
 #include "timer/timer_base.h"
 
