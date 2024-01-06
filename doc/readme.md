@@ -17,4 +17,4 @@ CaughtByCat
 Feed  
 ![Feed](./uml/out/state_machine/rat/sub_state_feed/sub_state_feed.png)  
 Manual  
-![Manual](./uml/out/state_machine/rat/sub_state_manual/)
+![Manual](./uml/out/state_machine/rat/sub_state_manual/sub_state_manual.png)
