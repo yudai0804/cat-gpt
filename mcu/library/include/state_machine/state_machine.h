@@ -7,6 +7,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <cstddef>
+#include <vector>
+
+#include "common/common.h"
+
 namespace state_machine {
 
 /*
@@ -28,25 +33,41 @@ struct State {
   void (*function)(void);
 };
 
-extern State* state_list[];
+extern std::vector<std::vector<State>> state_list;
 
 class StateMachine {
 private:
   State previous_state_;
   State current_state_;
+  size_t main_state_number_;
+  std::vector<size_t> sub_state_number_;
 
 public:
   StateMachine(State prev, State current) {
     previous_state_ = prev;
     current_state_ = current;
+    main_state_number_ = state_list.size();
+    sub_state_number_.resize(main_state_number_);
+    for (int i = 0; i < main_state_number_; i++) {
+      sub_state_number_[i] = state_list[i].size();
+    }
   }
 
-  void changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
+  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
+    // 引数が正常かチェック
+    if (main >= main_state_number_) {
+      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    if (sub >= sub_state_number_[main]) {
+      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    // ステートを更新
     previous_state_ = current_state_;
     current_state_ = state_list[main][sub];
-    if (is_printf) {
-      printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
-    }
+    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
+    return RET_OK;
   }
 
   void process() {
