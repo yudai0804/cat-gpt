@@ -1,0 +1,11 @@
+@startuml
+
+[*] --> Start
+Start --> Move
+Move --> Feed
+Feed --> Move
+Move --> Finish
+Feed --> Finish
+Finish --> [*]
+
+@enduml
