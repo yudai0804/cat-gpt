@@ -59,22 +59,35 @@ public:
 
   RET transmit(uint8_t *data, size_t len, bool enable_printf = 1) {
     WiFiClient client;
+    // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
       return RET_ERROR;
     }
+    // 送信
     client.write(data, len);
+    // 通信終了
     client.stop();
     return RET_OK;
   }
 
+  /**
+   * @brief
+   *
+   * @param data
+   * @param len 受信したデータ長さ
+   * @param enable_printf
+   * @return
+   */
   RET receive(uint8_t *data, size_t *len, bool enable_printf = 1) {
     WiFiClient client;
+    // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
       return RET_ERROR;
     }
     timer_.reset();
+    // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_.getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
@@ -83,10 +96,12 @@ public:
       }
     }
     size_t i = 0;
+    // 受信したデータをバッファにコピー
     while (client.available()) {
       data[i++] = client.read();
     }
     *len = i;
+    // 通信終了
     client.stop();
     return RET_OK;
   }
@@ -95,18 +110,16 @@ public:
                          uint8_t *receive_data, size_t *receive_data_len,
                          bool enable_printf = 1) {
     WiFiClient client;
-    // transmit
+    // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
       return RET_ERROR;
     }
+    // 送信
     client.write(transmit_data, transmit_data_len);
-    // receive
-    if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      if (enable_printf) printf("client connect error\r\n");
-      return RET_ERROR;
-    }
+    // 受信
     timer_.reset();
+    // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_.getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
@@ -115,10 +128,12 @@ public:
       }
     }
     size_t i = 0;
+    // 受信したデータをバッファにコピー
     while (client.available()) {
       receive_data[i++] = client.read();
     }
     *receive_data_len = i;
+    // 通信終了
     client.stop();
     return RET_OK;
   }
