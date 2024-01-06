@@ -23,7 +23,7 @@ class WifiTCPClient {
 public:
   static constexpr timer::time_t TIMEOUT_MS = 5000;
 
-private:
+protected:
   const char *ssid_;
   const char *password_;
   const char *host_;
@@ -32,6 +32,7 @@ private:
   const IPAddress gateway_;
   const IPAddress subnet_;
   T timer_;
+  bool is_connected_ = false;
 
 public:
   WifiTCPClient(const char *ssid, const char *password,
@@ -62,12 +63,14 @@ public:
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
+      is_connected_ = false;
       return RET_ERROR;
     }
     // 送信
     client.write(data, len);
     // 通信終了
     client.stop();
+    is_connected_ = true;
     return RET_OK;
   }
 
@@ -84,6 +87,7 @@ public:
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
+      is_connected_ = false;
       return RET_ERROR;
     }
     timer_.reset();
@@ -92,6 +96,7 @@ public:
       if (timer_.getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
         client.stop();
+        is_connected_ = false;
         return RET_ERROR;
       }
     }
@@ -103,6 +108,7 @@ public:
     *len = i;
     // 通信終了
     client.stop();
+    is_connected_ = true;
     return RET_OK;
   }
 
@@ -113,6 +119,7 @@ public:
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
       if (enable_printf) printf("client connect error\r\n");
+      is_connected_ = false;
       return RET_ERROR;
     }
     // 送信
@@ -124,6 +131,7 @@ public:
       if (timer_.getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
         client.stop();
+        is_connected_ = false;
         return RET_ERROR;
       }
     }
@@ -135,6 +143,7 @@ public:
     *receive_data_len = i;
     // 通信終了
     client.stop();
+    is_connected_ = true;
     return RET_OK;
   }
 
@@ -145,6 +154,7 @@ public:
   IPAddress getLocalIP() { return local_ip_; }
   IPAddress getGateway() { return gateway_; }
   IPAddress getSubnet() { return subnet_; }
+  bool getIsConnected() { return is_connected_; }
 };
 
 }  // namespace driver
