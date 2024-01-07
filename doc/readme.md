@@ -1,4 +1,10 @@
 # UML
+
+## 全体
+全体のステートマシン図  
+![state_machine_all](./uml/out/state_machine/all/all.png)  
+全体のシーケンス図(ACKは省略している)  
+![sequence_all](./uml/out/sequence/all/all.png)  
 ## ステートマシン図
 ステートに関してはメインステートとサブステートの2種類を用意する。  
 メインステートはイベント駆動のものを、サブステートはイベント駆動というよりかは実装寄り(アクティビティ図より)なものにする。  
@@ -8,9 +14,6 @@
 サブステートは各基板内の判断で自動で遷移される。  
 メインステートがManualのときは人間がスマホからすべてを操作するため、自動での遷移は行われない。  
 すべてサーバーから遷移させる必要がある。  
-
-全体のステートマシン図  
-![state_machine_all](./uml/out/state_machine/all/all.png)  
 
 ## Rat
 Idle  

@@ -1,9 +1,11 @@
 @startuml
 
+note "IdleからWaitForConnectionへの遷移は自動で行われるが\nWaitForConnectionからIdleへの遷移は自動で遷移しない" as N1
+
 [*] --> Idle : 正常
 [*] --> WaitForConnection : 通信エラー
 Idle --> WaitForConnection : 通信エラー
-WaitForConnection --> Idle : 通信回復
+WaitForConnection --> Idle : 通信回復\n状態の遷移は\nサーバーからの命令で\n行われる
 Idle --> [*]
 WaitForConnection --> [*]
 

@@ -1,0 +1,44 @@
+@startuml
+participant Rat Order 1
+participant Feeder Order 2
+participant Server Order 3
+participant User Order 4
+note over Rat,Feeder: ステートの初期値は\nmain=Idle\nsub=WaitForConnections
+group initialize
+Rat -> Server : 接続要求
+Server -> Rat : changeState(Idle, Idle)
+Feeder -> Server : 接続要求
+Server -> Feeder : changeState(Idle, Idle)
+end
+group normal
+group SetParameter
+Server -> Rat : setSearchMode()
+Server -> Rat : setAppelMode()
+Server -> Feeder : setFoodQuantity()
+end
+group 通常動作
+Server -> Rat : changeState(Search, Start)
+Server -> Feeder : changeState(Search, Start)
+Rat -> Server : Searchステートが終了(猫に捕まった)ことを通知
+Server -> Rat : changeState(CaughtByCat, Start)
+Server -> Feeder : changeState(CaughtByCat, Start)
+Rat -> Server : CaughtByCatステートが終了したことを通知
+Server -> Rat : changeState(Feed, Start)
+Server -> Feeder : changeState(Feed, Start)
+Rat -> Server : Feedステートが終了したことを通知
+Server -> Rat : changeState(Idle, Idle)
+Server -> Feeder : changeState(Idle, Idle)
+end
+end
+group manual
+User -> Server : マニュアル操作を開始
+Server -> Rat : changeState(Manual, Manual)
+Server -> Feeder : changeState(Manual, Manual)
+Server -> User : マニュアル操作を開始したことを通知
+== 人間がマニュアル操作終了時 ==
+User -> Server : マニュアル操作を終了
+Server -> Rat: changeState(Idle, Idle)
+Server -> Feeder : changeState(Idle, Idle)
+Server -> User : マニュアル操作を終了したことを通知
+end
+@enduml
