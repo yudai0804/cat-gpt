@@ -1,7 +1,10 @@
+
 # 使用しているライブラリ  
+
 [vl53l0x-arduino](https://github.com/pololu/vl53l0x-arduino)  
 
 # ピンアサイン  
+
 | role | pin | comment(option) |
 | - | - | - |
 | led_red | 12 | |
@@ -15,6 +18,5 @@
 | ain1 | 21 | channel1 |
 | ain2 | 19 | channel2 |
 | bin1 | 18 | channel3 |
-| bin2 |  5 | channel4 | 
+| bin2 | 5 | channel4 |
 | mode | 22 | 正論理、mode=1のときだけモーターが回る |
-

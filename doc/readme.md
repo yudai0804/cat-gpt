@@ -1,11 +1,14 @@
 # UML
 
 ## 全体
+
 全体のステートマシン図  
 ![state_machine_all](./uml/out/state_machine/all/all.png)  
 全体のシーケンス図(ACKは省略している)  
 ![sequence_all](./uml/out/sequence/all/all.png)  
+
 ## ステートマシン図
+
 ステートに関してはメインステートとサブステートの2種類を用意する。  
 メインステートはイベント駆動のものを、サブステートはイベント駆動というよりかは実装寄り(アクティビティ図より)なものにする。  
 サブステートの粒度を実装寄り(アクティビティ図寄り)するのは、組み込みシステムの場合は粒度が実装寄り(アクティビティ図寄り)の方が分かりやすく、デバッグもしやすいため。  
@@ -16,6 +19,7 @@
 すべてサーバーから遷移させる必要がある。  
 
 ## Rat
+
 Idle  
 ![Idle](./uml/out/state_machine/rat/sub_state_idle/sub_state_idle.png)  
 Search  
