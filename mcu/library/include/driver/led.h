@@ -5,28 +5,35 @@
 
 #pragma once
 
+#include "timer/timer.h"
 #ifdef TARGET_ESP32
 #include "Arduino.h"
 #include "esp32-hal-gpio.h"
 #endif
 
+#include <stdint.h>
+
 #include "common/common.h"
 #include "timer/timer_base.h"
-#include <stdint.h>
 
 namespace driver {
 
-template <typename T> class LED {
+class LED {
 private:
-  T timer_;
+  timer::TimerBase *timer_;
   timer::time_t interval_ = 0;
   uint8_t pin_ = 0;
   uint8_t status_ = 0;
 
 public:
-  LED() : timer_() {}
+  LED(timer::UseTimer use_timer) {
+    timer_ = timer::createTimer(use_timer);
+  }
 
-  LED(const uint8_t pin) : timer_(), pin_(pin) {}
+  LED(timer::UseTimer use_timer, const uint8_t pin)
+      : pin_(pin) {
+    timer_ = timer::createTimer(use_timer);
+  }
 
   void init() { DO_ESP32(pinMode(pin_, OUTPUT)); }
 
@@ -51,7 +58,7 @@ public:
     // interval=0の場合はここで設定された出力がonInterrupt内で更新されることはない
     off();
     // タイマーをリセット
-    timer_.reset();
+    timer_->reset();
     return RET_OK;
   }
 
@@ -69,7 +76,7 @@ public:
     // 出力をoffにする
     off();
     // タイマーをリセット
-    timer_.reset();
+    timer_->reset();
     return RET_OK;
   }
 
@@ -78,17 +85,17 @@ public:
    * またこの関数を呼ぶ際は割り込み内でタイマーの更新処理が終わった後に呼ぶこと
    */
   void onInterrupt(void) {
-    bool is_longer_than_interval = (timer_.getElapsedTime() >= interval_);
+    bool is_longer_than_interval = (timer_->getElapsedTime() >= interval_);
     bool is_timer_enable = (interval_ != 0);
     if (is_longer_than_interval && is_timer_enable) {
       // xorをすると0と1が交互に切り替わって、Lチカの動作になる
       status_ ^= 0x01;
       output(status_);
-      timer_.reset();
+      timer_->reset();
     }
   }
 
   uint8_t getStatus() { return status_; }
 };
 
-} // namespace driver
+}  // namespace driver
