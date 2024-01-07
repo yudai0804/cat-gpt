@@ -58,7 +58,7 @@ public:
     return RET_OK;
   }
 
-  RET transmit(uint8_t *data, size_t len, bool enable_printf = 1) {
+  RET transmit(uint8_t *data, size_t len, bool is_stop = 1, bool enable_printf = 1) {
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
@@ -69,7 +69,7 @@ public:
     // 送信
     client.write(data, len);
     // 通信終了
-    client.stop();
+    if (is_stop) client.stop();
     is_connected_ = true;
     return RET_OK;
   }
@@ -82,7 +82,7 @@ public:
    * @param enable_printf
    * @return
    */
-  RET receive(uint8_t *data, size_t *len, bool enable_printf = 1) {
+  RET receive(uint8_t *data, size_t *len, bool is_stop = 1, bool enable_printf = 1) {
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
@@ -107,7 +107,7 @@ public:
     }
     *len = i;
     // 通信終了
-    client.stop();
+    if (is_stop) client.stop();
     is_connected_ = true;
     return RET_OK;
   }
@@ -155,6 +155,7 @@ public:
   IPAddress getGateway() { return gateway_; }
   IPAddress getSubnet() { return subnet_; }
   bool getIsConnected() { return is_connected_; }
+  timer::time_t getTimeoutMS() { return TIMEOUT_MS; }
 };
 
 }  // namespace driver
