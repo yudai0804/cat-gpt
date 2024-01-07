@@ -5,8 +5,9 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "driver/VL53L0X.h"
-#include "sys/_stdint.h"
 
 namespace driver {
 class ToF {

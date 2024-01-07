@@ -15,12 +15,11 @@
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "driver/wrapper/tof.h"
+#include "timer/timer.h"
 #include "timer/timer_1ms.h"
 #include "timer/timer_base.h"
 
 namespace rat {
-
-// TODO: 通信をやり取りするクラス作る,Wi-Fi関連
 
 class Hardware {
 public:
@@ -43,10 +42,10 @@ public:
       .pwm_resolution_bit = 10,
       .pwm_resolution = 1024};
   driver::DRV8835 drv8835_{drv8835_hardware_config_};
-  driver::LED<timer::Timer1ms> led_red_{12};
-  driver::LED<timer::Timer1ms> led_white_{14};
-  driver::Switch<timer::Timer1ms> limit_switch_{15, 1};
-  driver::Switch<timer::Timer1ms> ui_switch_{27, 1};
+  driver::LED led_red_{timer::USE_TIMER_1MS, 12};
+  driver::LED led_white_{timer::USE_TIMER_1MS, 14};
+  driver::Switch limit_switch_{timer::USE_TIMER_1MS, 15, 1};
+  driver::Switch ui_switch_{timer::USE_TIMER_1MS, 27, 1};
   driver::ToF tof_{&vl53l0x_};
   // 制御関連
   control::Trapezoid trapezoid_velocity_{1.0f, 0.01f};

@@ -14,11 +14,11 @@
 #include "WiFiClient.h"
 #include "WiFiType.h"
 #include "common/common.h"
+#include "timer/timer.h"
 #include "timer/timer_base.h"
 
 namespace driver {
 
-template <typename T>
 class WifiTCPClient {
 public:
   static constexpr timer::time_t TIMEOUT_MS = 5000;
@@ -31,14 +31,16 @@ protected:
   const IPAddress local_ip_;
   const IPAddress gateway_;
   const IPAddress subnet_;
-  T timer_;
+  timer::TimerBase *timer_;
   bool is_connected_ = false;
 
 public:
-  WifiTCPClient(const char *ssid, const char *password,
+  WifiTCPClient(timer::UseTimer use_timer,
+                const char *ssid, const char *password,
                 const char *host, const uint16_t port,
                 const IPAddress local_ip, const IPAddress gateway, const IPAddress subnet)
       : ssid_(ssid), password_(password), host_(host), port_(port), local_ip_(local_ip), gateway_(gateway), subnet_(subnet) {
+    timer_ = timer::createTimer(use_timer);
   }
 
   RET init(bool enable_printf = 1) {
@@ -47,9 +49,9 @@ public:
       return RET_ERROR;
     }
     WiFi.begin(ssid_, password_);
-    timer_.reset();
+    timer_->reset();
     while (WiFi.status() != WL_CONNECTED) {
-      if (timer_.getElapsedTime() >= TIMEOUT_MS) {
+      if (timer_->getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("wifi begin timeout\r\n");
         return RET_TIMEOUT_ERROR;
       }
@@ -90,10 +92,10 @@ public:
       is_connected_ = false;
       return RET_ERROR;
     }
-    timer_.reset();
+    timer_->reset();
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
-      if (timer_.getElapsedTime() >= TIMEOUT_MS) {
+      if (timer_->getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
         client.stop();
         is_connected_ = false;
@@ -125,10 +127,10 @@ public:
     // 送信
     client.write(transmit_data, transmit_data_len);
     // 受信
-    timer_.reset();
+    timer_->reset();
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
-      if (timer_.getElapsedTime() >= TIMEOUT_MS) {
+      if (timer_->getElapsedTime() >= TIMEOUT_MS) {
         if (enable_printf) printf("receive timeout\r\n");
         client.stop();
         is_connected_ = false;

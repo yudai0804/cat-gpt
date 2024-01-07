@@ -4,6 +4,7 @@
  */
 
 #pragma once
+#include "timer/timer.h"
 #ifdef TARGET_ESP32
 #include <Arduino.h>
 
@@ -27,18 +28,19 @@ enum SwitchStatus : uint8_t {
   DETECT_MORE_1000MS,
 };
 
-template <typename T>
 class Switch {
 public:
 private:
-  T timer_;
+  timer::TimerBase *timer_;
   uint8_t pin_ = 0;
   uint8_t is_pullup_ = 0;
   SwitchStatus status_ = DETECT_NO;
 
 public:
-  Switch(const uint8_t pin, const uint8_t is_pullup)
-      : timer_(), pin_(pin), is_pullup_(is_pullup) {}
+  Switch(timer::UseTimer use_timer, const uint8_t pin, const uint8_t is_pullup)
+      : pin_(pin), is_pullup_(is_pullup) {
+    timer_ = timer::createTimer(use_timer);
+  }
 
   void init() {
     // pinModeやらなくても、GPIO入力なら動くみたい
@@ -58,11 +60,11 @@ public:
 
   void onInterrupt() {
     if (read() == 0) {
-      timer_.reset();
+      timer_->reset();
       status_ = DETECT_NO;
       return;
     }
-    timer::time_t time = timer_.getElapsedTime();
+    timer::time_t time = timer_->getElapsedTime();
     // センサーが反応した時間に応じてstatus_を更新
     if (time < 5) {
       status_ = DETECT_UNDER_5MS;
@@ -81,7 +83,7 @@ public:
     }
   }
   SwitchStatus getStatus() { return status_; }
-  timer::time_t getTime() { return timer_.getElapsedTime(); }
+  timer::time_t getTime() { return timer_->getElapsedTime(); }
 };
 
 }  // namespace driver
