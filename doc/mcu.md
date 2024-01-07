@@ -1,4 +1,9 @@
 
+# 概要
+
+マイコン:ESP32  
+開発環境:PlatformIO
+
 # 使用しているライブラリ  
 
 [vl53l0x-arduino](https://github.com/pololu/vl53l0x-arduino)  
