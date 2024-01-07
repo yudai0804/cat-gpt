@@ -5,13 +5,10 @@
 
 #pragma once
 
-#include "sys/_stdint.h"
 #include <stdint.h>
-#include <sys/types.h>
 
+#include "timer/timer.h"
 namespace timer {
-
-using time_t = uint32_t;
 
 /**
  * @class TimerBase
@@ -63,4 +60,7 @@ public:
    */
   time_t getElapsedTime() { return getCurrentTime() - previous_; }
 };
-} // namespace timer
+
+TimerBase* createTimer(UseTimer use_timer);
+
+}  // namespace timer
