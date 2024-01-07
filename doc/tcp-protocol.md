@@ -2,6 +2,7 @@
 # tcp-protocol
 
 マイコン-Server間のデータ通信のプロトコル  
+**通信の開始は必ずマイコン側から行われる。**  
 何かに準拠したものではなく、適当に考えたなんちゃってプロトコルなので注意  
 
 通信方式はTCP、データ型はuint8_tを想定  
@@ -13,10 +14,13 @@ TODO: 使用するIP及びポート番号が決まったらまとめる。
 
 各基板にはIdle状態とWaitForConnectionという状態があり、Serverとの通信が成立した際はIdle状態となり、Serverとの通信に失敗した場合はWaitForConnectionという状態になる。  
 
-| offset | type | name |
-| - | - | - |
-| 0 | uint8_t | header |
-| 1~n | | データ |
+| offset | type | name | details |
+| - | - | - | - |
+| 0 | uint8_t | order_number(命令数) | |
+| 1 | uint8_t | header1 | |
+| 2 | uint8_t | length1 | lengthは0も設定可能 |
+| 3 ~ 3 + (length1 - 1) | | data1 | |
+| | | order_number分のheader,length,dataが来る | |
 
 ## header
 
@@ -25,80 +29,159 @@ headerのMSBはACK用とする。MSBが1である場合はACKである。
 
 | number | name | details |
 | - | - | - |
-| 0x00 | StateInformation | 一定時間おきに各基板から送信される。|
+| 0x00 | StateInformation | 一定時間おきに各基板から送信される。 |
 | 0x01 | ChangeState | ステートを移動する |
-| 0x02 | SetSearchMode | ネズミの探索モードを設定。|
-| 0x03 | SetAppelMode | ネズミがアピールするときのモードを設定 |
+| 0x02 | SetSearchMode | Ratの探索モードを設定。|
+| 0x03 | SetAppealMode | Ratがアピールするときのモードを設定 |
 | 0x04 | SetFoodQuantity | Feederが出す餌の量を設定 |
+| 0x05 | ManualMove | manualステートのときのみ有効。  設定したしたパラメーターでRatが移動する。 |
+| 0x06 | ManualFeed | manualステートのときのみ有効。  設定した量の餌をFeederが出す |
 
 ## StateInformation  
 
+基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x00(StateInformation) |
-| 1 | uint8_t | main_state | |
-| 2 | uint8_t | sub_state | |
+| 0 | uint8_t | header | 0x00(StateInformation) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | main_state | |
+| 3 | uint8_t | sub_state | |
 
 ### StateInformation ACK
 
+Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x80 + 0x00(StateInformation) |
-| 1 | uint8_t | dummy_data | 1 |
+| 0 | uint8_t | header | 0x80 + 0x00(StateInformation) |
+| 1 | uint8_t | length | 0 |
 
 ## ChangeState  
 
+Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x01(ChangeState) |
-| 1 | uint8_t | main_state | |
-| 2 | uint8_t | sub_state | |
+| 0 | uint8_t | header | 0x01(ChangeState) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | main_state | |
+| 3 | uint8_t | sub_state | |
 
 ### ChangeState ACK
 
+基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x80 + 0x01(ChangeState) |
-| 1 | uint8_t | is_success | 成功:1,失敗:0 |
+| 0 | uint8_t | header | 0x80 + 0x01(ChangeState) |
+| 1 | uint8_t | length | 3 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | uint8_t | main_state | 現在の値 |
+| 4 | uint8_t | sub_state | 現在の値 |
 
 ## SetSearchMode  
 
+Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x02(SetSearchMode) |
-| 1 | uint8_t | mode | |
+| 0 | uint8_t | header | 0x02(SetSearchMode) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | mode | |
 
 ### SetSearchMode ACK
 
+基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x80 + 0x02(SetSearchMode) |
-| 1 | uint8_t | is_success | 成功:1,失敗:0 |
+| 0 | uint8_t | header | 0x80 + 0x02(SetSearchMode) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | uint8_t | mode | 現在の値 |
 
-## SetAppelMode  
+## SetAppealMode  
 
+Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x03(SetAppelMode) |
-| 1 | uint8_t | mode | |
+| 0 | uint8_t | header | 0x03(SetAppealMode) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | mode | |
 
-### SetAppelMode ACK
+### SetAppealMode ACK
 
+基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x80 + 0x03(SetAppelMode) |
-| 1 | uint8_t | is_success | 成功:1,失敗:0 |
+| 0 | uint8_t | header | 0x80 + 0x03(SetAppealMode) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | uint8_t | mode | 現在の値 |
 
 ## SetFoodQuantity  
 
+Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x03(SetFoodQuantity) |
-| 1 | uint8_t | quantity | 単位はグラム |
+| 0 | uint8_t | header | 0x04(SetFoodQuantity) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | quantity |単位は[g] |
 
 ### SetFoodQuantity ACK
 
+基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | heaader | 0x80 + 0x03(SetFoodQuantity) |
-| 1 | uint8_t | is_success | 成功:1,失敗:0 |
+| 0 | uint8_t | header | 0x80 + 0x04(SetFoodQuantity) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | uint8_t | quantity | 現在の値 |
+
+## ManualMove  
+
+Server->基板  
+メインステートがmanualステートのときのみ有効となる  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x05(ManualMove) |
+| 1 | uint8_t | length | 8 |
+| 2 | float | velocity(31~24bit) | |
+| 3 | | velocity(23~16bit) | |
+| 4 | | velocity(15~8bit) | |
+| 5 | | velocity(7~0bit) | |
+| 6 | float | omega(31~24bit) | |
+| 7 | | omega(23~16bit) | |
+| 8 | | omega(15~8bit) | |
+| 9 | | omega(7~0bit) | |
+
+### ManualMode ACK
+
+基板->Server  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x05(ManualMove) |
+| 1 | uint8_t | length | 9 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | float | velocity(31~24bit) | 現在の値 |
+| 4 | | velocity(23~16bit) | |
+| 5 | | velocity(15~8bit) | |
+| 6 | | velocity(7~0bit) | |
+| 7 | float | omega(31~24bit) | 現在の値 |
+| 8 | | omega(23~16bit) | |
+| 9 | | omega(15~8bit) | |
+| 10 | | omega(7~0bit) | |
+## ManualFeed  
+
+Server->基板  
+メインステートがmanualステートのときのみ有効となる  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x06(ManualFeed) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | quantity |単位は[g] |
+
+### ManualFeed ACK
+
+基板->Server  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x80 + 0x06(ManualFeed) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | is_success | 成功:1,失敗:0 |
+| 3 | uint8_t | quantity | 現在の値 |
