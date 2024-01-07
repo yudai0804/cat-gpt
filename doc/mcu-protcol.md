@@ -16,7 +16,7 @@ TODO: 使用するIP及びポート番号が決まったらまとめる。
 | offset | type | name |
 | - | - | - |
 | 0 | uint8_t | header |
-| 1-n | | データ |
+| 1~n | | データ |
 
 ## header
 
