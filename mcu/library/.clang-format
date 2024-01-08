@@ -11,4 +11,5 @@ AccessModifierOffset: -2
 # AllowShortLoopsOnASingleLine: true
 ColumnLimit: 0
 # AlignAfterOpenBracket: BlockIndent
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 
