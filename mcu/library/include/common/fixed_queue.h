@@ -55,6 +55,8 @@ public:
     increment(rear_);
     return ret;
   }
+
+  size_t getSize() { return size_; }
 };
 
 }  // namespace common
