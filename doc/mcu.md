@@ -25,3 +25,30 @@
 | bin1 | 18 | channel3 |
 | bin2 | 5 | channel4 |
 | mode | 22 | 正論理、mode=1のときだけモーターが回る |
+
+# Wi-Fiの情報について
+
+外部にもらしては行けない情報に関しては、各プロジェクトのsrcディレクトリにあるprivate_information.hというファイルにマクロとして定義している。  
+private_information.hはgitignoreされているため、Gitでは追跡されていない。  
+
+イメージ
+
+```
+/**
+ * @file private_information.h
+ * @brief 外部に公開したらまずい情報が入っている。
+ */
+#include "Arduino.h"
+#include "IPAddress.h"
+
+#pragma once
+
+#define SSID "SSID!!!!!"
+#define PASSWORD "PASSWORD!!!!!!"
+#define HOST "192.168.10.111"
+#define PORT 5000
+#define LOCAL_IP IPAddress(192, 168, 10, 123)
+#define GATEWAY IPAddress(192, 168, 10, 1)
+#define SUBNET IPAddress(255, 255, 255, 0)
+
+```
