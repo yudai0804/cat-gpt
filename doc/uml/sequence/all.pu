@@ -3,7 +3,7 @@ participant Rat Order 1
 participant Feeder Order 2
 participant Server Order 3
 participant User Order 4
-note over Rat,Feeder: ステートの初期値は\nmain=Idle\nsub=WaitForConnections
+note over Rat,Feeder: ステートの初期値は\nmain=Idle\nsub=NoConnect
 group initialize
 Rat -> Server : 接続要求
 Server -> Rat : changeState(Idle, Idle)

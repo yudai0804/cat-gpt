@@ -1,12 +1,14 @@
 @startuml
 
-note "IdleからWaitForConnectionへの遷移は自動で行われるが\nWaitForConnectionからIdleへの遷移は自動で遷移しない" as N1
-
 [*] --> Idle : 正常
-[*] --> WaitForConnection : 通信エラー
-Idle --> WaitForConnection : 通信エラー
-WaitForConnection --> Idle : 通信回復\n状態の遷移は\nサーバーからの命令で\n行われる
+[*] --> ChangeState
+Idle --> ChangeState
+ChangeState --> NoConnect
+[*] --> NoConnect : 通信エラー
+Idle --> NoConnect : 通信エラー
+NoConnect --> Idle : 通信回復\n状態の遷移は\nサーバーからの命令で\n行われる
+ChangeState --> [*]
 Idle --> [*]
-WaitForConnection --> [*]
+NoConnect --> [*]
 
 @enduml

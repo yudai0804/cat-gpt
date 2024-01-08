@@ -12,7 +12,8 @@ ACKは返すものとする。
 
 TODO: 使用するIP及びポート番号が決まったらまとめる。  
 
-各基板にはIdle状態とWaitForConnectionという状態があり、Serverとの通信が成立した際はIdle状態となり、Serverとの通信に失敗した場合はWaitForConnectionという状態になる。  
+各基板にはIdle状態とNoConnectという状態があり、Serverとの通信が成立した際はIdle状態となり、Serverとの通信に失敗した場合はNoConnectという状態になる。  
+状態遷移中はChangeState状態となる。  
 
 | offset | type | name | details |
 | - | - | - | - |
