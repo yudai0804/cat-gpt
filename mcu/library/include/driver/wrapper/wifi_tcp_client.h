@@ -21,7 +21,7 @@ namespace driver {
 
 class WifiTCPClient {
 public:
-  static constexpr timer::time_t TIMEOUT_MS = 5000;
+  static constexpr timer::time_t TIMEOUT_MS = 2000;
 
 private:
   const char *ssid_;
