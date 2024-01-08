@@ -14,13 +14,6 @@
 
 namespace state_machine {
 
-/*
-今回のシステムでは行わないが、大規模なシステムの場合
-ステートが切り替わるタイミングで、様々なことを行う。
-その場合、StateMachineクラスを継承して使うとよい。
-今回は複雑なことは行わないため、StateMachineクラスをそのまま使用する。
-*/
-
 using state_t = uint8_t;
 
 // 当初std::functionを使用する予定だったが、std::functionはメモリの動的確保が行われるらしいのでやめた。
@@ -41,9 +34,11 @@ private:
   State current_state_;
   size_t main_state_number_;
   std::vector<size_t> sub_state_number_;
+  void (*change_event_)(void);
 
 public:
-  StateMachine(State prev, State current) {
+  StateMachine(void (*change_event)(void), State prev, State current) {
+    change_event_ = change_event;
     previous_state_ = prev;
     current_state_ = current;
     main_state_number_ = state_list.size();
@@ -67,6 +62,7 @@ public:
     previous_state_ = current_state_;
     current_state_ = state_list[main][sub];
     if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
+    change_event_();
     return RET_OK;
   }
 
