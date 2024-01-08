@@ -24,13 +24,15 @@ namespace idle {
 namespace sub_state {
 enum Name : state_t {
   Idle,
-  WaitForConnection,
+  NoConnect,
+  ChangeState
 };
 
 }  // namespace sub_state
 
 void idle_process();
-void wait_for_connection_process();
+void no_connect_process();
+void change_state_process();
 
 }  // namespace idle
 

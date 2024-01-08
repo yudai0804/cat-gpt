@@ -32,6 +32,7 @@ class StateMachine {
 private:
   State previous_state_;
   State current_state_;
+  State next_state_;
   size_t main_state_number_;
   std::vector<size_t> sub_state_number_;
   void (*change_event_)(void);
@@ -41,9 +42,10 @@ public:
     change_event_ = change_event;
   }
 
-  StateMachine(State prev, State current) {
+  StateMachine(State prev, State current, State next) {
     previous_state_ = prev;
     current_state_ = current;
+    next_state_ = next;
     main_state_number_ = state_list.size();
     sub_state_number_.resize(main_state_number_);
     for (int i = 0; i < main_state_number_; i++) {
@@ -51,29 +53,12 @@ public:
     }
   }
 
-  StateMachine(void(change_event)(void), State prev, State current)
-      : StateMachine(prev, current) {
+  StateMachine(void(change_event)(void), State prev, State current, State next)
+      : StateMachine(prev, current, next) {
     setChangeEvent(change_event);
   }
 
-  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
-    // 引数が正常かチェック
-    if (main >= main_state_number_) {
-      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    if (sub >= sub_state_number_[main]) {
-      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    // ステートを更新
-    previous_state_ = current_state_;
-    current_state_ = state_list[main][sub];
-    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
-    change_event_();
-    return RET_OK;
-  }
-
+  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1);
   void process() {
     current_state_.function();
   }

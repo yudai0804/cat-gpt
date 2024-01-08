@@ -15,7 +15,8 @@ namespace state_machine {
 std::vector<std::vector<State>> state_list = {
   {
     {.main = main_state::Idle, .sub = idle::sub_state::Idle, .name = "Idle::Idle", .function = idle::idle_process},
-    {.main = main_state::Idle, .sub = idle::sub_state::WaitForConnection, .name = "Idle::WaitForConnection", .function = idle::wait_for_connection_process},
+    {.main = main_state::Idle, .sub = idle::sub_state::NoConnect, .name = "Idle::NoConnect", .function = idle::no_connect_process},
+    {.main = main_state::Idle, .sub = idle::sub_state::ChangeState, .name = "Idle::ChangeState", .function = idle::change_state_process},
   },
   {
     {.main = main_state::Search, .sub = search::sub_state::Start, .name = "Search::Start", .function = search::start_process},
@@ -47,7 +48,9 @@ namespace idle {
 void idle_process() {
 }
 
-void wait_for_connection_process() {
+void no_connect_process() {
+}
+void change_state_process() {
 }
 
 }  // namespace idle
