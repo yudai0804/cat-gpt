@@ -23,7 +23,7 @@ class WifiTCPClient {
 public:
   static constexpr timer::time_t TIMEOUT_MS = 5000;
 
-protected:
+private:
   const char *ssid_;
   const char *password_;
   const char *host_;

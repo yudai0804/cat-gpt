@@ -4,7 +4,9 @@
 #include "driver/drv8835.h"
 #include "driver/led.h"
 #include "driver/switch.h"
+#include "driver/wrapper/wifi_tcp_client.h"
 #include "freertos/FreeRTOS.h"
+#include "private_information.h"
 #include "state_machine/state.h"
 #include "state_machine/state_machine.h"
 #include "timer/timer.h"
@@ -31,6 +33,8 @@ driver::DRV8835 drv8835(drv8835_hardware_config);
 driver::LED led_red(timer::USE_TIMER_1MS, 12);
 driver::LED led_white(timer::USE_TIMER_1MS, 14);
 driver::Switch limit_switch(timer::USE_TIMER_1MS, 15, 1);
+
+driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, LOCAL_IP, GATEWAY, SUBNET);
 
 void timer1msHandler(void *param) {
   timer::Timer1ms_update();
@@ -81,6 +85,7 @@ void setup() {
   led_red.init();
   led_white.init();
   limit_switch.init();
+  wifi_client.init();
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   led_red.blinkByInterval(500);
@@ -89,8 +94,16 @@ void setup() {
   // buzzer.beep(driver::Buzzer::F4, 1000);
 }
 
+int count = 0;
+
 void loop() {
-  controlMotorByKeyboard();
+  char tx_data[128];
+  char rx_data[128];
+  size_t receive_data_len;
+  sprintf(tx_data, "%d\r\n", ++count);
+  wifi_client.transmitAndReceive((uint8_t *)tx_data, strlen(tx_data), (uint8_t *)rx_data, &receive_data_len);
+  printf("%s\r\n", rx_data);
+  // controlMotorByKeyboard();
   // Serial.printf("time = %d, red = %d, white = %d\r\n", timer::Timer1ms_getCurrentTime(), led_red.getStatus(), led_white.getStatus());
   // Serial.printf("time = %d, status = %d\r\n", limit_switch.getTime(), limit_switch.getStatus());
 }
