@@ -32,11 +32,12 @@ headerのMSBはACK用とする。MSBが1である場合はACKである。
 | - | - | - |
 | 0x00 | StateInformation | 一定時間おきに各基板から送信される。 |
 | 0x01 | ChangeState | ステートを移動する |
-| 0x02 | SetSearchMode | Ratの探索モードを設定。|
-| 0x03 | SetAppealMode | Ratがアピールするときのモードを設定 |
-| 0x04 | SetFoodQuantity | Feederが出す餌の量を設定 |
-| 0x05 | ManualMove | manualステートのときのみ有効。  設定したしたパラメーターでRatが移動する。 |
-| 0x06 | ManualFeed | manualステートのときのみ有効。  設定した量の餌をFeederが出す |
+| 0x02 | RequestChangeState | ステートを移動していいかServerに尋ねる |
+| 0x03 | SetSearchMode | Ratの探索モードを設定。|
+| 0x04 | SetAppealMode | Ratがアピールするときのモードを設定 |
+| 0x05 | SetFoodQuantity | Feederが出す餌の量を設定 |
+| 0x06 | ManualMove | manualステートのときのみ有効。  設定したしたパラメーターでRatが移動する。 |
+| 0x07 | ManualFeed | manualステートのときのみ有効。  設定した量の餌をFeederが出す |
 
 ## StateInformation  
 
@@ -77,12 +78,33 @@ Server->基板
 | 3 | uint8_t | main_state | 現在の値 |
 | 4 | uint8_t | sub_state | 現在の値 |
 
+## RequestChangeState  
+
+基板->Server  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x02(RequestChangeState) |
+| 1 | uint8_t | length | 2 |
+| 2 | uint8_t | main_state | |
+| 3 | uint8_t | sub_state | |
+
+### RequestChangeState ACK
+
+Server->基板  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x80 + 0x02(RequestChangeState) |
+| 1 | uint8_t | length | 3 |
+| 2 | uint8_t | is_ok | ok:1,だめ:0 |
+| 3 | uint8_t | main_state | 遷移するステート |
+| 4 | uint8_t | sub_state | 遷移するステート |
+
 ## SetSearchMode  
 
 Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x02(SetSearchMode) |
+| 0 | uint8_t | header | 0x03(SetSearchMode) |
 | 1 | uint8_t | length | 1 |
 | 2 | uint8_t | mode | |
 
@@ -91,7 +113,7 @@ Server->基板
 基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x80 + 0x02(SetSearchMode) |
+| 0 | uint8_t | header | 0x80 + 0x03(SetSearchMode) |
 | 1 | uint8_t | length | 2 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | uint8_t | mode | 現在の値 |
@@ -101,7 +123,7 @@ Server->基板
 Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x03(SetAppealMode) |
+| 0 | uint8_t | header | 0x04(SetAppealMode) |
 | 1 | uint8_t | length | 1 |
 | 2 | uint8_t | mode | |
 
@@ -110,7 +132,7 @@ Server->基板
 基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x80 + 0x03(SetAppealMode) |
+| 0 | uint8_t | header | 0x80 + 0x04(SetAppealMode) |
 | 1 | uint8_t | length | 2 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | uint8_t | mode | 現在の値 |
@@ -120,7 +142,7 @@ Server->基板
 Server->基板  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x04(SetFoodQuantity) |
+| 0 | uint8_t | header | 0x05(SetFoodQuantity) |
 | 1 | uint8_t | length | 1 |
 | 2 | uint8_t | quantity |単位は[g] |
 
@@ -129,7 +151,7 @@ Server->基板
 基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x80 + 0x04(SetFoodQuantity) |
+| 0 | uint8_t | header | 0x80 + 0x05(SetFoodQuantity) |
 | 1 | uint8_t | length | 2 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | uint8_t | quantity | 現在の値 |
@@ -140,7 +162,7 @@ Server->基板
 メインステートがmanualステートのときのみ有効となる  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x05(ManualMove) |
+| 0 | uint8_t | header | 0x06(ManualMove) |
 | 1 | uint8_t | length | 8 |
 | 2 | float | velocity(31~24bit) | |
 | 3 | | velocity(23~16bit) | |
@@ -156,7 +178,7 @@ Server->基板
 基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x05(ManualMove) |
+| 0 | uint8_t | header | 0x06(ManualMove) |
 | 1 | uint8_t | length | 9 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | float | velocity(31~24bit) | 現在の値 |
@@ -167,13 +189,14 @@ Server->基板
 | 8 | | omega(23~16bit) | |
 | 9 | | omega(15~8bit) | |
 | 10 | | omega(7~0bit) | |
+
 ## ManualFeed  
 
 Server->基板  
 メインステートがmanualステートのときのみ有効となる  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x06(ManualFeed) |
+| 0 | uint8_t | header | 0x07(ManualFeed) |
 | 1 | uint8_t | length | 1 |
 | 2 | uint8_t | quantity |単位は[g] |
 
@@ -182,7 +205,7 @@ Server->基板
 基板->Server  
 | offset | type | role | details |
 | - | - | - | - |
-| 0 | uint8_t | header | 0x80 + 0x06(ManualFeed) |
+| 0 | uint8_t | header | 0x80 + 0x07(ManualFeed) |
 | 1 | uint8_t | length | 2 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | uint8_t | quantity | 現在の値 |
