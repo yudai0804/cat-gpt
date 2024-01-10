@@ -63,7 +63,8 @@ public:
     led_white_.init();
     limit_switch_.init();
     ui_switch_.init();
-    tof_.init();
+    // 一旦コメントアウト
+    // tof_.init();
     printf("rat hardware initialize finish\r\n");
   }
 
@@ -75,6 +76,7 @@ public:
   }
 
   void onInterruptForToF() {
+    // tofだけ実行に時間がかかるため、別の割り込みで動かす
     tof_.onInterrupt();
   }
 
