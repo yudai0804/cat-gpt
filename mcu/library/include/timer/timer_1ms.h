@@ -6,7 +6,6 @@
 #pragma once
 
 #include "timer/timer_base.h"
-#include <functional>
 
 namespace timer {
 
@@ -22,4 +21,4 @@ public:
   time_t getCurrentTime() { return Timer1ms_getCurrentTime(); }
 };
 
-} // namespace timer
+}  // namespace timer
