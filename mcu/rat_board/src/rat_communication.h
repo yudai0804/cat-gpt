@@ -24,8 +24,7 @@ using namespace state_machine;
 
 class Communication : public state_machine::StateMachine {
 public:
-  static constexpr size_t BUFFER_SIZE = 128;
-  static constexpr size_t DECODE_SIZE = 32;
+  static constexpr size_t BUFFER_SIZE = 64;
   enum Header : uint8_t {
     StateInformation,
     ChangeState,
@@ -57,14 +56,6 @@ private:
     uint8_t *pointer = (uint8_t *)float_data;
     for (int i = 0; i < 4; i++)
       pointer[i] = uint8_data[i];
-  }
-
-public:
-  Communication(driver::WifiTCPClient *client, Information *information, timer::UseTimer use_timer)
-      : client_(client), information_(information), StateMachine() {
-    timer_ = timer::createTimer(use_timer);
-    State DEFAULT_STATE = state_list[main_state::Idle][idle::sub_state::NoConnect];
-    init(DEFAULT_STATE, DEFAULT_STATE, DEFAULT_STATE);
   }
 
   void receive(uint8_t header, uint8_t *receive_data, size_t length) {
@@ -138,6 +129,22 @@ public:
     }
   }
 
+  void setOrder(uint8_t header, uint8_t *data, uint8_t length) {
+    // orderをインクリメントする
+    buffer_.buffer_[0]++;
+    // buffer_に命令を追加
+    buffer_.addBuffer((uint8_t)header);
+    buffer_.addBuffer(data, length);
+  }
+
+public:
+  Communication(driver::WifiTCPClient *client, Information *information, timer::UseTimer use_timer)
+      : client_(client), information_(information), StateMachine() {
+    timer_ = timer::createTimer(use_timer);
+    State DEFAULT_STATE = state_list[main_state::Idle][idle::sub_state::NoConnect];
+    init(DEFAULT_STATE, DEFAULT_STATE, DEFAULT_STATE);
+  }
+
   void communicate(bool enable_transmit_state_information = 1) {
     // 送受信処理と受信時の各変数に代入処理
     uint8_t transmit_buffer[BUFFER_SIZE];
@@ -155,14 +162,6 @@ public:
     // 通信が成功したかどうかを堪忍する。
     // 結果に応じて、stateを遷移する
     decode(receive_buffer, receive_buffer_length);
-  }
-
-  void setOrder(uint8_t header, uint8_t *data, uint8_t length) {
-    // orderをインクリメントする
-    buffer_.buffer_[0]++;
-    // buffer_に命令を追加
-    buffer_.addBuffer((uint8_t)header);
-    buffer_.addBuffer(data, length);
   }
 
   void transmitStateInformation() {
