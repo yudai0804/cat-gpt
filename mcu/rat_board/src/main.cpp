@@ -50,8 +50,9 @@ void timer50msProcess(void) {
   interval_timer.reset();
 }
 
-#if 0
+// #if 0
 void controlMotorByKeyboard() {
+  auto &drv8835 = rat_hardware.drv8835_;
   static float output_a = 0.0f;
   static float output_b = 0.0f;
   if (!Serial.available()) return;
@@ -84,13 +85,13 @@ void controlMotorByKeyboard() {
   output_b = drv8835.getOutputB();
   printf("a = %+3f, b = %+3f\r\n", output_a, output_b);
 }
-#endif
+// #endif
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   rat_hardware.init();
-  wifi_client.init();
+  // wifi_client.init();
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   timer_20ms = xTimerCreate("TIM_20MS", 20, pdTRUE, NULL, timer20msHandler);
@@ -103,7 +104,7 @@ void setup() {
 int count = 0;
 
 void loop() {
-  timer50msProcess();
+  // timer50msProcess();
 #if 0
   char tx_data[128];
   char rx_data[128];
@@ -112,7 +113,7 @@ void loop() {
   wifi_client.transmitAndReceive((uint8_t *)tx_data, strlen(tx_data), (uint8_t *)rx_data, &receive_data_len);
   printf("%s\r\n", rx_data);
 #endif
-  // controlMotorByKeyboard();
+  controlMotorByKeyboard();
   // Serial.printf("time = %d, red = %d, white = %d\r\n", timer::Timer1ms_getCurrentTime(), led_red.getStatus(), led_white.getStatus());
   // Serial.printf("time = %d, status = %d\r\n", limit_switch.getTime(), limit_switch.getStatus());
 }

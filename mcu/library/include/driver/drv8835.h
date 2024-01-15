@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "sys/_stdint.h"
 #ifdef TARGET_ESP32
 #include <Arduino.h>
 
@@ -12,10 +13,12 @@
 #include "esp32-hal-ledc.h"
 #endif
 
-#include "common/common.h"
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstdlib>
-#include <stdint.h>
+
+#include "common/common.h"
 
 namespace driver {
 
@@ -35,7 +38,8 @@ public:
     uint8_t pwm_resolution_bit;
     uint32_t pwm_resolution;
   };
-  enum Direction : int8_t { POSITIVE_DIRECTION = 1, NEGATIVE_DIRECTION = -1 };
+  enum Direction : int8_t { POSITIVE_DIRECTION = 1,
+                            NEGATIVE_DIRECTION = -1 };
 
 private:
   float max_output_ = 1.0f;
@@ -43,16 +47,16 @@ private:
   float output_b_ = 0.0f;
   uint8_t output_mode_ = 0;
   HardwareConfig hardware_;
-  int8_t direction_a_ = 0;
-  int8_t direction_b_ = 0;
+  int8_t direction_a_ = POSITIVE_DIRECTION;
+  int8_t direction_b_ = POSITIVE_DIRECTION;
 
 public:
   DRV8835(const HardwareConfig hardware, const float max_output = 1.0f)
       : hardware_(hardware), max_output_(max_output) {}
 
-  RET setDirection(uint8_t direction_a, uint8_t direction_b) {
-    if ((direction_a == 0 || direction_a == 1) &&
-        (direction_b == 0 || direction_b == 1)) {
+  RET setDirection(Direction direction_a, Direction direction_b) {
+    if ((direction_a == POSITIVE_DIRECTION || direction_a == NEGATIVE_DIRECTION) &&
+        (direction_b == POSITIVE_DIRECTION || direction_b == NEGATIVE_DIRECTION)) {
       direction_a_ = direction_a;
       direction_b_ = direction_b;
       return RET_OK;
@@ -79,8 +83,8 @@ public:
     }
   }
 
-  RET enableMotorDriver() { return outputMode(1); }
-  RET disableMotorDriver() { return outputMode(0); }
+  RET enableMotorDriver() { return outputMode(0); }
+  RET disableMotorDriver() { return outputMode(1); }
 
   void init() {
     // modeの初期化
@@ -99,7 +103,7 @@ public:
     DO_ESP32(ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel));
     DO_ESP32(ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel));
     // 出力をonにする
-    enableMotorDriver();
+    disableMotorDriver();
   }
 
   /**
@@ -111,15 +115,14 @@ public:
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
     output_a_ = std::max(std::min(output_a, max_output_), -max_output_);
+    uint32_t pwm = (uint32_t)(std::abs(output_a_) * hardware_.pwm_resolution);
     // directionを適用
     if (output_a_ * direction_a_ > 0) {
-      DO_ESP32(ledcWrite(hardware_.ain1_channel,
-                         (uint32_t)output_a_ * hardware_.pwm_resolution));
+      DO_ESP32(ledcWrite(hardware_.ain1_channel, pwm));
       DO_ESP32(ledcWrite(hardware_.ain2_channel, 0));
     } else {
       DO_ESP32(ledcWrite(hardware_.ain1_channel, 0));
-      DO_ESP32(ledcWrite(hardware_.ain2_channel,
-                         (uint32_t)output_a_ * hardware_.pwm_resolution));
+      DO_ESP32(ledcWrite(hardware_.ain2_channel, pwm));
     }
   }
 
@@ -132,14 +135,13 @@ public:
     // 値を範囲内にする(std::clampと同じ)
     // c++17に対応していないためstd::clampが使えなかった
     output_b_ = std::max(std::min(output_b, max_output_), -max_output_);
+    uint32_t pwm = (uint32_t)(std::abs(output_b_) * hardware_.pwm_resolution);
     if (output_b_ * direction_b_ > 0) {
-      DO_ESP32(ledcWrite(hardware_.bin1_channel,
-                         (uint32_t)output_b_ * hardware_.pwm_resolution));
+      DO_ESP32(ledcWrite(hardware_.bin1_channel, pwm));
       DO_ESP32(ledcWrite(hardware_.bin2_channel, 0));
     } else {
       DO_ESP32(ledcWrite(hardware_.bin1_channel, 0));
-      DO_ESP32(ledcWrite(hardware_.bin2_channel,
-                         (uint32_t)output_b_ * hardware_.pwm_resolution));
+      DO_ESP32(ledcWrite(hardware_.bin2_channel, pwm));
     }
   }
 
@@ -160,5 +162,4 @@ public:
   uint8_t getDirectionA() { return direction_a_; }
   uint8_t getDirectionB() { return direction_b_; }
 };
-
-} // namespace driver
+}  // namespace driver

@@ -28,11 +28,17 @@ public:
   // マイコンのペリフェラル関係
   VL53L0X vl53l0x_;
   driver::Buzzer buzzer_{23, 0};
+  // 森先輩がピンアサインを間違えたので修正
   driver::DRV8835::HardwareConfig drv8835_hardware_config_ = {
-      .mode_pin = 22,
-      .ain1_pin = 21,
-      .ain2_pin = 19,
-      .bin1_pin = 18,
+      //       .mode_pin = 22,
+      //       .ain1_pin = 21,
+      //       .ain2_pin = 19,
+      //       .bin1_pin = 18,
+      //       .bin2_pin = 5,
+      .mode_pin = 18,
+      .ain1_pin = 19,
+      .ain2_pin = 21,
+      .bin1_pin = 22,
       .bin2_pin = 5,
       .ain1_channel = 1,
       .ain2_channel = 2,
