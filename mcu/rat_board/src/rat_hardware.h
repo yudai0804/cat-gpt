@@ -125,5 +125,3 @@ public:
   driver::SwitchStatus getLimitSwitch() { return limit_switch_.getStatus(); }
 };
 }  // namespace rat
-
-extern rat::Hardware rat_hardware;

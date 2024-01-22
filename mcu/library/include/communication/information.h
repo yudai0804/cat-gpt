@@ -1,5 +1,5 @@
 /**
- * @file rat.h
+ * @file information.h
  * @brief
  */
 
@@ -9,7 +9,7 @@
 
 #include "common/common.h"
 
-namespace rat {
+namespace communication {
 
 // TODO: search_modeとappel_modeをちゃんと考える
 struct Information {
@@ -52,5 +52,4 @@ public:
   float getManualVelocity() { return manual_velocity_; }
   float getManualOmega() { return manual_omega_; }
 };
-}  // namespace rat
-extern rat::Information rat_information;
+}  // namespace communication

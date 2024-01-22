@@ -1,5 +1,5 @@
 /**
- * @file rat_communication.h
+ * @file communication.h
  * @brief
  */
 
@@ -11,14 +11,14 @@
 #include "Arduino.h"
 #include "common/buffer.h"
 #include "common/common.h"
+#include "communication/information.h"
 #include "driver/wrapper/wifi_tcp_client.h"
-#include "rat_information.h"
 #include "state_machine/state.h"
 #include "state_machine/state_machine.h"
 #include "timer/timer.h"
 #include "timer/timer_base.h"
 
-namespace rat {
+namespace communication {
 
 using namespace state_machine;
 
@@ -39,7 +39,7 @@ public:
 
 private:
   driver::WifiTCPClient *client_;
-  Information *information_;
+  Information information_;
   common::Buffer<uint8_t> buffer_{BUFFER_SIZE};
   timer::TimerBase *timer_;
   State DEFAULT_STATE;
@@ -64,7 +64,7 @@ private:
         constexpr uint8_t LENGTH = 3;
         uint8_t transmit_data[LENGTH];
         RET ret = changeState(receive_data[0], receive_data[1]);
-        auto state = getCurrentState();
+        State state = getCurrentState();
         transmit_data[0] = (ret == RET_OK) ? 1 : 0;
         transmit_data[1] = state.main;
         transmit_data[2] = state.sub;
@@ -78,8 +78,8 @@ private:
       case SetSearchMode: {
         constexpr uint8_t LENGTH = 2;
         uint8_t transmsit_data[LENGTH];
-        RET ret = information_->setSearchMode(receive_data[0]);
-        auto mode = information_->getSearchMode();
+        RET ret = information_.setSearchMode(receive_data[0]);
+        auto mode = information_.getSearchMode();
         transmsit_data[0] = (ret == RET_OK) ? 1 : 0;
         transmsit_data[1] = mode;
         setOrder(SetSearchMode + ACK, transmsit_data, LENGTH);
@@ -88,8 +88,8 @@ private:
       case SetAppealMode: {
         constexpr uint8_t LENGTH = 2;
         uint8_t transmsit_data[LENGTH];
-        RET ret = information_->setAppealMode(receive_data[0]);
-        auto mode = information_->getAppealMode();
+        RET ret = information_.setAppealMode(receive_data[0]);
+        auto mode = information_.getAppealMode();
         transmsit_data[0] = (ret == RET_OK) ? 1 : 0;
         transmsit_data[1] = mode;
         setOrder(SetAppealMode + ACK, transmsit_data, LENGTH);
@@ -100,10 +100,10 @@ private:
         float manual_velocity, manual_omega;
         convertUint8ToFloat(&receive_data[0], &manual_velocity);
         convertUint8ToFloat(&receive_data[0], &manual_omega);
-        RET ret1 = information_->setManualVelocity(manual_velocity);
-        RET ret2 = information_->setManualOmega(manual_omega);
-        manual_velocity = information_->getManualVelocity();
-        manual_omega = information_->getManualOmega();
+        RET ret1 = information_.setManualVelocity(manual_velocity);
+        RET ret2 = information_.setManualOmega(manual_omega);
+        manual_velocity = information_.getManualVelocity();
+        manual_omega = information_.getManualOmega();
         transmsit_data[0] = (ret1 == RET_OK && ret2 == RET_OK) ? 1 : 0;
         convertFloatToUint8(&transmsit_data[1], &manual_velocity);
         convertFloatToUint8(&transmsit_data[5], &manual_omega);
@@ -137,12 +137,26 @@ private:
     buffer_.addBuffer(data, length);
   }
 
+  void transmitStateInformation() {
+    constexpr uint8_t LENGTH = 2;
+    uint8_t data[LENGTH];
+    data[0] = (uint8_t)current_state_.main;
+    data[1] = (uint8_t)current_state_.sub;
+    setOrder(Header::StateInformation, data, LENGTH);
+  }
+
+  void transmitRequestChangeState(state_t main, state_t sub) {
+    constexpr uint8_t LENGTH = 2;
+    uint8_t data[LENGTH];
+    data[0] = (uint8_t)current_state_.main;
+    data[1] = (uint8_t)current_state_.sub;
+    setOrder(Header::RequestChangeState, data, LENGTH);
+  }
+
 public:
-  Communication(driver::WifiTCPClient *client, Information *information, timer::UseTimer use_timer)
-      : client_(client), information_(information), StateMachine() {
+  Communication(driver::WifiTCPClient *client, timer::UseTimer use_timer)
+      : client_(client), StateMachine() {
     timer_ = timer::createTimer(use_timer);
-    State DEFAULT_STATE = state_list[main_state::Idle][idle::sub_state::NoConnect];
-    init(DEFAULT_STATE, DEFAULT_STATE, DEFAULT_STATE);
   }
 
   void communicate(bool enable_transmit_state_information = 1) {
@@ -164,57 +178,15 @@ public:
     decode(receive_buffer, receive_buffer_length);
   }
 
-  void transmitStateInformation() {
-    constexpr uint8_t LENGTH = 2;
-    uint8_t data[LENGTH];
-    data[0] = (uint8_t)current_state_.main;
-    data[1] = (uint8_t)current_state_.sub;
-    setOrder(Header::StateInformation, data, LENGTH);
-  }
-
-  void transmitRequestChangeState() {
-    constexpr uint8_t LENGTH = 2;
-    uint8_t data[LENGTH];
-    data[0] = (uint8_t)current_state_.main;
-    data[1] = (uint8_t)current_state_.sub;
-    setOrder(Header::RequestChangeState, data, LENGTH);
-  }
-
-  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
-    // 引数が正常かチェック
-    if (main >= main_state_number_) {
-      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    if (sub >= sub_state_number_[main]) {
-      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    // ステートを更新
-    previous_state_ = current_state_;
-    current_state_ = state_list[main][sub];
-    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
-    return RET_OK;
-  }
-
   RET requestChangeState(state_t main, state_t sub, uint8_t is_printf = 1) {
-    // 引数が正常かチェック
-    if (main >= main_state_number_) {
-      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    if (sub >= sub_state_number_[main]) {
-      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    // ステートを更新
-    previous_state_ = current_state_;
-    current_state_ = state_list[main_state::Idle][idle::sub_state::ChangeState];
-    next_state_ = state_list[main][sub];
-    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
-    transmitRequestChangeState();
+    // idleステートに設定
+    RET ret = changeState(main_state::Idle, idle::sub_state::ChangeState, is_printf);
+    if (ret != RET_OK) return ret;
+    // requestを送信
+    transmitRequestChangeState(main, sub);
     return RET_OK;
   }
+
+  const Information &getInformation() { return information_; }
 };
-}  // namespace rat
-extern rat::Communication rat_communication;
+}  // namespace communication

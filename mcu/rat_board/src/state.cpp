@@ -5,8 +5,8 @@
 
 #include "state_machine/state.h"
 
+#include "communication/communication.h"
 #include "rat_hardware.h"
-#include "rat_information.h"
 #include "timer/timer_1ms.h"
 
 namespace state_machine {

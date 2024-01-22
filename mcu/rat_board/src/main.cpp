@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "communication/communication.h"
 #include "driver/buzzer.h"
 #include "driver/drv8835.h"
 #include "driver/led.h"
@@ -7,9 +8,8 @@
 #include "driver/wrapper/wifi_tcp_client.h"
 #include "freertos/FreeRTOS.h"
 #include "private_information.h"
-#include "rat_communication.h"
+#include "rat.h"
 #include "rat_hardware.h"
-#include "rat_information.h"
 #include "state_machine/state.h"
 #include "state_machine/state_machine.h"
 #include "timer/timer.h"
@@ -21,11 +21,10 @@ TimerHandle_t timer_1ms;
 TimerHandle_t timer_20ms;
 
 driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, LOCAL_IP, GATEWAY, SUBNET);
-
+communication::Communication rat_com{&wifi_client, timer::USE_TIMER_1MS};
 rat::Hardware rat_hardware;
-rat::Information rat_information;
+
 // タイマーは仮
-rat::Communication rat_communication{&wifi_client, &rat_information, timer::USE_TIMER_1MS};
 
 void timer1msHandler(void *param) {
   timer::Timer1ms_update();
@@ -48,6 +47,7 @@ void timer50msProcess(void) {
   // 使わないのでコメントアウト
   // rat_communication.communicate();
   interval_timer.reset();
+  rat_com.communicate();
 }
 
 // #if 0
