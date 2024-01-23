@@ -159,25 +159,71 @@ public:
     timer_ = timer::createTimer(use_timer);
   }
 
-  void communicate(bool enable_transmit_state_information = 1) {
+  void communicate() {
     // 送受信処理と受信時の各変数に代入処理
     uint8_t transmit_buffer[BUFFER_SIZE];
     size_t transmit_buffer_size;
     uint8_t receive_buffer[BUFFER_SIZE];
     size_t receive_buffer_length;
-
-    if (enable_transmit_state_information) transmitStateInformation();
+    RET ret;
+    // queueに現在のステートを追加
+    transmitStateInformation();
 
     // bufferをコピー
     // bufferをポインタではなく、コピーする理由はWifiの送受信中に、setOrderが発生して、bufferが書き換えられる可能性があるため。
     transmit_buffer_size = buffer_.copyBuffer(transmit_buffer);
     buffer_.clear();
-    client_->transmitAndReceive(transmit_buffer, transmit_buffer_size, receive_buffer, &receive_buffer_length);
-    // 通信が成功したかどうかを堪忍する。
-    // 結果に応じて、stateを遷移する
+    ret = client_->transmitAndReceive(transmit_buffer, transmit_buffer_size, receive_buffer, &receive_buffer_length);
+    if (ret != RET_OK) {
+      // 通信に失敗した場合はNoConnectに移動
+      changeState(main_state::Idle, idle::sub_state::NoConnect);
+      return;
+    }
+
     decode(receive_buffer, receive_buffer_length);
   }
+  /**
+   * @brief ステートを移行する
+   * @details 現在のステートと移行したいステートが同じだった場合はステートの遷移は行われない
+   * 値が範囲外だった場合も状態の遷移は行われない
+   * @param main
+   * @param sub
+   * @param is_printf
+   * @return
+   */
+  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
+    // 引数が正常かチェック
+    if (main >= main_state_number_) {
+      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    if (sub >= sub_state_number_[main]) {
+      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    // ステートを更新
+    // ステートが変化していなかった場合はその後の処理は行わない
+    bool is_changed_state = (main != current_state_.main || sub != current_state_.sub);
+    if (!is_changed_state) return RET_ERROR;
 
+    current_state_ = state_list[main][sub];
+    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
+    // 現在のステートを送信
+    transmitStateInformation();
+    return RET_OK;
+  }
+
+  /**
+   * @brief ステートの移行をサーバー側にrequestする
+   * @details サーバーからのレスポンスが来るまではChangingStateで待機する
+   * 現在のステートと移行したいステートが同じだった場合はステートの遷移は行われない
+   * 値が範囲外だった場合も状態の遷移は行われない
+   *
+   * @param main
+   * @param sub
+   * @param is_printf
+   * @return
+   */
   RET requestChangeState(state_t main, state_t sub, uint8_t is_printf = 1) {
     // idleステートに設定
     RET ret = changeState(main_state::Idle, idle::sub_state::ChangingState, is_printf);

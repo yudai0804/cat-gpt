@@ -37,7 +37,7 @@ protected:
 public:
   StateMachine();
 
-  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1);
+  virtual RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) = 0;
   virtual RET requestChangeState(state_t main, state_t sub, uint8_t is_printf = 1) = 0;
 
   void onInterruptStateFunction() {
