@@ -180,7 +180,7 @@ public:
 
   RET requestChangeState(state_t main, state_t sub, uint8_t is_printf = 1) {
     // idleステートに設定
-    RET ret = changeState(main_state::Idle, idle::sub_state::ChangeState, is_printf);
+    RET ret = changeState(main_state::Idle, idle::sub_state::ChangingState, is_printf);
     if (ret != RET_OK) return ret;
     // requestを送信
     transmitRequestChangeState(main, sub);
