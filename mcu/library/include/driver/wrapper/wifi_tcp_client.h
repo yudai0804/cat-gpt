@@ -43,28 +43,28 @@ public:
     timer_ = timer::createTimer(use_timer);
   }
 
-  RET init(bool enable_printf = 1) {
+  RET init() {
     if (!WiFi.config(local_ip_, gateway_, subnet_)) {
-      if (enable_printf) printf("wifi config error\r\n");
+      printf("wifi config error\r\n");
       return RET_ERROR;
     }
     WiFi.begin(ssid_, password_);
     timer_->reset();
     while (WiFi.status() != WL_CONNECTED) {
       if (timer_->getElapsedTime() >= TIMEOUT_MS) {
-        if (enable_printf) printf("wifi begin timeout\r\n");
+        printf("wifi begin timeout\r\n");
         return RET_TIMEOUT_ERROR;
       }
     }
-    if (enable_printf) printf("WiFi initalize success\r\n");
+    printf("WiFi initalize success\r\n");
     return RET_OK;
   }
 
-  RET transmit(uint8_t *data, size_t len, bool is_stop = 1, bool enable_printf = 1) {
+  RET transmit(uint8_t *data, size_t len, bool is_stop = 1) {
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      if (enable_printf) printf("client connect error\r\n");
+      printf("client connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -81,14 +81,13 @@ public:
    *
    * @param data
    * @param len 受信したデータ長さ
-   * @param enable_printf
    * @return
    */
-  RET receive(uint8_t *data, size_t *len, bool is_stop = 1, bool enable_printf = 1) {
+  RET receive(uint8_t *data, size_t *len, bool is_stop = 1) {
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      if (enable_printf) printf("client connect error\r\n");
+      printf("client connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -96,7 +95,7 @@ public:
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_->getElapsedTime() >= TIMEOUT_MS) {
-        if (enable_printf) printf("receive timeout\r\n");
+        printf("receive timeout\r\n");
         client.stop();
         is_connected_ = false;
         return RET_ERROR;
@@ -115,12 +114,11 @@ public:
   }
 
   RET transmitAndReceive(uint8_t *transmit_data, size_t transmit_data_len,
-                         uint8_t *receive_data, size_t *receive_data_len,
-                         bool enable_printf = 1) {
+                         uint8_t *receive_data, size_t *receive_data_len) {
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      if (enable_printf) printf("client connect error\r\n");
+      printf("client connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -131,7 +129,7 @@ public:
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_->getElapsedTime() >= TIMEOUT_MS) {
-        if (enable_printf) printf("receive timeout\r\n");
+        printf("receive timeout\r\n");
         client.stop();
         is_connected_ = false;
         return RET_ERROR;

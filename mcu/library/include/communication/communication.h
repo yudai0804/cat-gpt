@@ -188,17 +188,16 @@ public:
    * 値が範囲外だった場合も状態の遷移は行われない
    * @param main
    * @param sub
-   * @param is_printf
    * @return
    */
-  RET changeState(state_t main, state_t sub, uint8_t is_printf = 1) {
+  RET changeState(state_t main, state_t sub) {
     // 引数が正常かチェック
     if (main >= main_state_number_) {
-      if (is_printf) printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
       return RET_ARGUMENT_ERROR;
     }
     if (sub >= sub_state_number_[main]) {
-      if (is_printf) printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
       return RET_ARGUMENT_ERROR;
     }
     // ステートを更新
@@ -207,7 +206,7 @@ public:
     if (!is_changed_state) return RET_ERROR;
 
     current_state_ = state_list[main][sub];
-    if (is_printf) printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
+    printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
     // 現在のステートを送信
     transmitStateInformation();
     return RET_OK;
@@ -221,12 +220,11 @@ public:
    *
    * @param main
    * @param sub
-   * @param is_printf
    * @return
    */
-  RET requestChangeState(state_t main, state_t sub, uint8_t is_printf = 1) {
+  RET requestChangeState(state_t main, state_t sub) {
     // idleステートに設定
-    RET ret = changeState(main_state::Idle, idle::sub_state::ChangingState, is_printf);
+    RET ret = changeState(main_state::Idle, idle::sub_state::ChangingState);
     if (ret != RET_OK) return ret;
     // requestを送信
     transmitRequestChangeState(main, sub);
