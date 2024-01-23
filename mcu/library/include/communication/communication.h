@@ -159,6 +159,10 @@ public:
     timer_ = timer::createTimer(use_timer);
   }
 
+  /**
+   * @brief 送受信処理を行う。
+   * @note この関数は送受信処理を行う箇所で呼び出すこと
+   */
   void communicate() {
     // 送受信処理と受信時の各変数に代入処理
     uint8_t transmit_buffer[BUFFER_SIZE];
@@ -186,6 +190,7 @@ public:
    * @brief ステートを移行する
    * @details 現在のステートと移行したいステートが同じだった場合はステートの遷移は行われない
    * 値が範囲外だった場合も状態の遷移は行われない
+   * @note この関数は割り込み内で呼び出しても問題はない
    * @param main
    * @param sub
    * @return
@@ -217,6 +222,7 @@ public:
    * @details サーバーからのレスポンスが来るまではChangingStateで待機する
    * 現在のステートと移行したいステートが同じだった場合はステートの遷移は行われない
    * 値が範囲外だった場合も状態の遷移は行われない
+   * @note この関数は割り込み内で呼び出しても問題はない
    *
    * @param main
    * @param sub
