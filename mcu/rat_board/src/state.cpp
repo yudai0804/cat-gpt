@@ -5,8 +5,7 @@
 
 #include "state_machine/state.h"
 
-#include "communication/communication.h"
-#include "rat_hardware.h"
+#include "rat.h"
 #include "timer/timer_1ms.h"
 
 namespace state_machine {
@@ -16,7 +15,7 @@ std::vector<std::vector<State>> state_list = {
   {
     {.main = main_state::Idle, .sub = idle::sub_state::Idle, .name = "Idle::Idle", .function = idle::idle_process},
     {.main = main_state::Idle, .sub = idle::sub_state::NoConnect, .name = "Idle::NoConnect", .function = idle::no_connect_process},
-    {.main = main_state::Idle, .sub = idle::sub_state::ChangeState, .name = "Idle::ChangeState", .function = idle::change_state_process},
+    {.main = main_state::Idle, .sub = idle::sub_state::ChangingState, .name = "Idle::ChangingState", .function = idle::changing_state_process},
   },
   {
     {.main = main_state::Search, .sub = search::sub_state::Start, .name = "Search::Start", .function = search::start_process},
@@ -38,6 +37,9 @@ std::vector<std::vector<State>> state_list = {
     {.main = main_state::Feed, .sub = feed::sub_state::Finish, .name = "Feed::Start", .function = feed::finish_process},
   },
   {
+    {.main = main_state::Manual, .sub = manual::sub_state::Manual, .name = "Manual::Manual", .function = manual::manual_process}
+  },
+  {
     {.main = main_state::Error, .sub = error::sub_state::Error, .name = "Error::Error", .function = error::error_process}
   }
 };
@@ -50,7 +52,7 @@ void idle_process() {
 
 void no_connect_process() {
 }
-void change_state_process() {
+void changing_state_process() {
 }
 
 }  // namespace idle
@@ -106,6 +108,12 @@ void finish_process() {
 }
 
 }  // namespace feed
+
+namespace manual {
+
+void manual_process() {
+}
+}  // namespace manual
 
 namespace error {
 

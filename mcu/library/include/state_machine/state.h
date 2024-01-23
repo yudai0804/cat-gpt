@@ -16,6 +16,7 @@ enum Name : state_t {
   Suspend,
   CaughtByCat,
   Feed,
+  Manual,
   Error,
 };
 }
@@ -25,14 +26,14 @@ namespace sub_state {
 enum Name : state_t {
   Idle,
   NoConnect,
-  ChangeState
+  ChangingState
 };
 
 }  // namespace sub_state
 
 void idle_process();
 void no_connect_process();
-void change_state_process();
+void changing_state_process();
 
 }  // namespace idle
 
@@ -92,6 +93,15 @@ void feed_process();
 void finish_process();
 
 }  // namespace feed
+
+namespace manual {
+namespace sub_state {
+enum Name : state_t {
+  Manual
+};
+}  // namespace sub_state
+void manual_process();
+}  // namespace manual
 
 namespace error {
 
