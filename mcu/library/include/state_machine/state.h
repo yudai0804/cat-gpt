@@ -13,7 +13,6 @@ namespace main_state {
 enum Name : state_t {
   Idle,
   Search,
-  Suspend,
   CaughtByCat,
   Feed,
   Manual,
