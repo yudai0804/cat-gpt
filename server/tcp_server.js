@@ -1,6 +1,6 @@
 const net = require('net');
 
-class CommandType {
+class Command {
   name;
   value;
   constructor(name, value) {
@@ -8,12 +8,12 @@ class CommandType {
     this.value = value;
   }
 }
-class Command {
+class CommandList {
   #command;
   constructor() {
     this.#command = [
-      new CommandType("StateInformation", 0x00),
-      new CommandType("ChangeState", 0x01)
+      new Command("StateInformation", 0x00),
+      new Command("ChangeState", 0x01)
     ];
     console.log(this.#command[0])
     // ACKを追加
@@ -34,7 +34,7 @@ class Command {
   }
 }
 
-class StateType {
+class State {
   main_state;
   main_value;
   sub_state;
@@ -47,14 +47,14 @@ class StateType {
   }
 }
 
-class State {
+class StateList {
   #state;
   constructor() {
     this.#state = [
       //           main_state, main_value, sub_state, sub_value
-      new StateType("Idle", 0x00, "Idle", 0x00),
-      new StateType("Idle", 0x00, "NoConnect", 0x01),
-      new StateType("Idle", 0x00, "ChangingState", 0x02),
+      new State("Idle", 0x00, "Idle", 0x00),
+      new State("Idle", 0x00, "NoConnect", 0x01),
+      new State("Idle", 0x00, "ChangingState", 0x02),
     ];
   }
   getStateByName(main, sub = undefined) {
