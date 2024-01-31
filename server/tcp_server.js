@@ -159,10 +159,14 @@ class TCPServer {
     }
   }
 
-  constructor(port, ip_address) {
+  constructor(port, my_ip, rat_ip, feeder_ip) {
     this.#port = port;
-    this.#ip_address = ip_address;
-    this.#RAT_IP = "192.168.10.111";
+    this.#ip_address = my_ip;
+    this.#RAT_IP = rat_ip;
+    this.#FEEDER_IP = feeder_ip;
+    // IPが異常な値でないかチェック
+    if (this.#RAT_IP == this.#FEEDER_IP)
+      console.log("ip address error");
     this.#command_list = CommandList();
     this.#state_list = StateList();
     const server = net.createServer(socket => {
@@ -170,7 +174,10 @@ class TCPServer {
         console.log(`${data} from ${socket.remoteAddress}`);
         this.#onReceive(socket.remoteAddress, data);
         let tx_data = this.#transmit(socket.remoteAddress);
-        socket.write(tx_data);
+        if (tx_data.length != 0)
+          socket.write(tx_data);
+        else
+          console.log("tx_data length is 0")
       });
 
       socket.on('close', () => {
@@ -182,4 +189,4 @@ class TCPServer {
   }
 }
 
-tcp = new TCPServer(5000, 'localhost');
+tcp = new TCPServer(5000, 'localhost', 'localhost', "192.168.100.123");
