@@ -157,8 +157,8 @@ private:
   void transmitRequestChangeState(state_t main, state_t sub) {
     constexpr uint8_t LENGTH = 2;
     uint8_t data[LENGTH];
-    data[0] = (uint8_t)current_state_.main;
-    data[1] = (uint8_t)current_state_.sub;
+    data[0] = (uint8_t)main;
+    data[1] = (uint8_t)sub;
     setOrder(Header::RequestChangeState, data, LENGTH);
   }
 

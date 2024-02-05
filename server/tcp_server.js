@@ -22,7 +22,8 @@ class CommandList {
   constructor() {
     this.#command = [
       new Command("StateInformation", 0x00),
-      new Command("ChangeState", 0x01)
+      new Command("ChangeState", 0x01),
+      new Command("RequestChangeState", 0x02)
     ];
     // ACKを追加
     // ACKのvalueは0x80
@@ -150,8 +151,20 @@ class TCPServer {
         let tmp_state = state_list.getStateByValue(data_array[1], data_array[2]);
         if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
         else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
-        console.log("print change state ack");
-        console.log(this.#rat_state);
+        // console.log("print change state ack");
+        // console.log(this.#rat_state);
+        break;
+      }
+      case command_list.getCommandByName("RequestChangeState").value: {
+        let tmp_state = state_list.getStateByValue(data_array[0], data_array[1]);
+        if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
+        else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
+        // TODO: ここで処理を実行すること
+        // 今は仮でリクエストされたステートをそのまま許可している
+        console.log("request change state");
+        console.log(tmp_state)
+        let ack = command_list.getCommandByName("RequestChangeStateACK").value;
+        this.#addOrder(ip, ack, [1, data_array[0], data_array[1]]);
         break;
       }
     }
