@@ -67,6 +67,7 @@ class StateList {
       new State("Idle", 0x00, "Idle", 0x00),
       new State("Idle", 0x00, "NoConnect", 0x01),
       new State("Idle", 0x00, "ChangingState", 0x02),
+      new State("Search", 0x01, "Start", 0x00)
     ];
   }
 
@@ -232,7 +233,7 @@ class TCPServer {
     this.#ip_address = my_ip;
     this.#RAT_IP = rat_ip;
     this.#FEEDER_IP = feeder_ip;
-    this.#TIMEOUT = 2000;
+    this.#TIMEOUT = 1000;
     // IPが異常な値でないかチェック
     if (this.#RAT_IP == this.#FEEDER_IP)
       console.log("ip address error");

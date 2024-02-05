@@ -21,7 +21,7 @@ namespace driver {
 
 class WifiTCPClient {
 public:
-  static constexpr timer::time_t TIMEOUT_MS = 2000;
+  static constexpr timer::time_t TIMEOUT_MS = 1000;
 
 private:
   const char *ssid_;
@@ -115,6 +115,7 @@ public:
 
   RET transmitAndReceive(uint8_t *transmit_data, size_t transmit_data_len,
                          uint8_t *receive_data, size_t *receive_data_len) {
+    // TODO: 送受信にリトライ機能つける
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {

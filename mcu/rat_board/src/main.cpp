@@ -10,6 +10,7 @@
 #include "private_information.h"
 #include "rat.h"
 #include "rat_hardware.h"
+#include "soc/soc.h"
 #include "state_machine/state.h"
 #include "state_machine/state_machine.h"
 #include "timer/timer.h"
@@ -19,6 +20,7 @@
 
 TimerHandle_t timer_1ms;
 TimerHandle_t timer_20ms;
+TaskHandle_t state_machine_task_handle;
 
 driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, LOCAL_IP, GATEWAY, SUBNET);
 communication::Communication rat_com{&wifi_client, timer::USE_TIMER_1MS};
@@ -37,7 +39,6 @@ void timer20msHandler(void *param) {
   timer::Timer20ms_update();
   // 使わないのでコメントアウト
   // rat_hardware.onInterruptForToF();
-  rat_com.onInterruptStateFunction();
 }
 
 /**
@@ -48,6 +49,15 @@ void timer50msProcess(void) {
   if (interval_timer.getElapsedTime() < 50) return;
   interval_timer.reset();
   rat_com.communicate();
+}
+
+/**
+ * 状態遷移用タスク
+ */
+void stateMachineTask(void *param) {
+  while (1) {
+    rat_com.onInterruptStateFunction();
+  }
 }
 
 // #if 0
@@ -90,18 +100,21 @@ void controlMotorByKeyboard() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-
+  // タイマー関連を初期化
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   timer_20ms = xTimerCreate("TIM_20MS", 20, pdTRUE, NULL, timer20msHandler);
   // rat_hardware.led_red_.blinkByFrequency(1);
   // rat_hardware.led_white_.blinkByFrequency(1);
   xTimerStart(timer_1ms, 0);
   xTimerStart(timer_20ms, 0);
+  // ペリフェラル関連を初期化
   rat_hardware.init();
   int ret = wifi_client.init();
   printf("wifi status = %d\r\n", ret);
 
   is_initialize_end = true;
+  // 状態遷移タスクの開始
+  xTaskCreatePinnedToCore(stateMachineTask, "STATE_MACHINE_TASK", 4096, NULL, 1, NULL, APP_CPU_NUM);
 }
 
 int count = 0;
