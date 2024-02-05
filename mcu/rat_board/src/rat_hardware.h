@@ -61,7 +61,7 @@ public:
 public:
   Hardware() {}
   void init() {
-    Serial.begin(115200);
+    // なんでかわからないけど、picoを使った場合はここのwire.beginをコメントアウトしないと正常に動作しなかった
     Wire.begin(16, 17, 100000);
     buzzer_.init();
     drv8835_.init();

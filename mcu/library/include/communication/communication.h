@@ -109,6 +109,9 @@ private:
         convertFloatToUint8(&transmsit_data[5], &manual_omega);
         setOrder(ManualMove + ACK, transmsit_data, LENGTH);
       } break;
+      case StateInformation + ACK:
+        // printf("state information ack received\r\n");
+        break;
     }
   }
 
@@ -131,9 +134,15 @@ private:
 
   void setOrder(uint8_t header, uint8_t *data, uint8_t length) {
     // orderをインクリメントする
-    buffer_.buffer_[0]++;
+    if (buffer_.getLength() == 0) {
+      buffer_.addBuffer(1);
+    } else {
+      buffer_.buffer_[0]++;
+    }
     // buffer_に命令を追加
-    buffer_.addBuffer((uint8_t)header);
+    buffer_.addBuffer(header);
+    // データ長を追加
+    buffer_.addBuffer(length);
     buffer_.addBuffer(data, length);
   }
 
@@ -177,6 +186,11 @@ public:
     // bufferをポインタではなく、コピーする理由はWifiの送受信中に、setOrderが発生して、bufferが書き換えられる可能性があるため。
     transmit_buffer_size = buffer_.copyBuffer(transmit_buffer);
     buffer_.clear();
+    // debug用に中身を出力
+    printf("communicate\r\nlength = %d\r\n", transmit_buffer_size);
+    for (int i = 0; i < transmit_buffer_size; i++) {
+      printf("data[%d] = %d\r\n", i, transmit_buffer[i]);
+    }
     ret = client_->transmitAndReceive(transmit_buffer, transmit_buffer_size, receive_buffer, &receive_buffer_length);
     if (ret != RET_OK) {
       // 通信に失敗した場合はNoConnectに移動

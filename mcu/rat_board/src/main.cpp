@@ -23,15 +23,17 @@ TimerHandle_t timer_20ms;
 driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, LOCAL_IP, GATEWAY, SUBNET);
 communication::Communication rat_com{&wifi_client, timer::USE_TIMER_1MS};
 rat::Hardware rat_hardware;
-
+bool is_initialize_end = false;
 // タイマーは仮
 
 void timer1msHandler(void *param) {
   timer::Timer1ms_update();
+  if (!is_initialize_end) return;
   rat_hardware.onInterrupt1ms();
 }
 
 void timer20msHandler(void *param) {
+  if (!is_initialize_end) return;
   timer::Timer20ms_update();
   // 使わないのでコメントアウト
   // rat_hardware.onInterruptForToF();
@@ -44,8 +46,6 @@ void timer20msHandler(void *param) {
 void timer50msProcess(void) {
   static timer::Timer1ms interval_timer;
   if (interval_timer.getElapsedTime() < 50) return;
-  // 使わないのでコメントアウト
-  // rat_communication.communicate();
   interval_timer.reset();
   rat_com.communicate();
 }
@@ -90,8 +90,6 @@ void controlMotorByKeyboard() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  rat_hardware.init();
-  // wifi_client.init();
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   timer_20ms = xTimerCreate("TIM_20MS", 20, pdTRUE, NULL, timer20msHandler);
@@ -99,12 +97,17 @@ void setup() {
   rat_hardware.led_white_.blinkByFrequency(1);
   xTimerStart(timer_1ms, 0);
   xTimerStart(timer_20ms, 0);
+  rat_hardware.init();
+  int ret = wifi_client.init();
+  printf("wifi status = %d\r\n", ret);
+
+  is_initialize_end = true;
 }
 
 int count = 0;
 
 void loop() {
-  // timer50msProcess();
+  timer50msProcess();
 #if 0
   char tx_data[128];
   char rx_data[128];

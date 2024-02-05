@@ -99,6 +99,11 @@ class TCPServer {
 
   #addOrder(ip, header, data_array = []) {
     if (ip == this.#RAT_IP) {
+      if (this.#rat_transmit_queue.length == 0) {
+        this.#rat_transmit_queue[0] = 1;
+      } else {
+        this.#rat_transmit_queue[0]++;
+      }
       this.#rat_transmit_queue.push(header);
       this.#rat_transmit_queue.push(data_array.length);
       for (let i = 0; i < data_array.length; i++) {
@@ -194,4 +199,5 @@ class TCPServer {
   }
 }
 
-tcp = new TCPServer(5000, '127.0.0.1', '127.0.0.1', "192.168.100.123");
+// tcp = new TCPServer(5000, '192.168.227.10', '127.168.227.123', "192.168.100.123");
+tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");

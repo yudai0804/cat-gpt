@@ -29,7 +29,7 @@ public:
 
   void addBuffer(T *data, size_t length) {
     // lengthが0ときはmemcpyは行われない
-    memcpy(getBufferPointer(), data, length * sizeof(T));
+    memcpy(getBufferPointer() + index_ * sizeof(T), data, length * sizeof(T));
     index_ += length;
   }
 
