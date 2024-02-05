@@ -54,11 +54,8 @@ public:
    */
   RET blinkByInterval(const timer::time_t interval) {
     interval_ = interval;
-    // 出力をOFFにする。
-    // interval=0の場合はここで設定された出力がonInterrupt内で更新されることはない
-    off();
-    // タイマーをリセット
-    timer_->reset();
+    // intervalが0だった場合は出力をOFFにする。
+    if (interval_ == 0) off();
     return RET_OK;
   }
 
@@ -73,10 +70,8 @@ public:
       // 1 / f * 1000 / 2
       interval_ = (uint16_t)(500.0f / (float)frequency);
     }
-    // 出力をoffにする
-    off();
-    // タイマーをリセット
-    timer_->reset();
+    // intervalが0だった場合は出力をoffにする
+    if (interval_ == 0) off();
     return RET_OK;
   }
 

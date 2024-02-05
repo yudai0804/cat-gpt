@@ -37,7 +37,7 @@ void timer20msHandler(void *param) {
   timer::Timer20ms_update();
   // 使わないのでコメントアウト
   // rat_hardware.onInterruptForToF();
-  // rat_communication.onInterruptStateFunction();
+  rat_com.onInterruptStateFunction();
 }
 
 /**
@@ -93,8 +93,8 @@ void setup() {
 
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   timer_20ms = xTimerCreate("TIM_20MS", 20, pdTRUE, NULL, timer20msHandler);
-  rat_hardware.led_red_.blinkByFrequency(1);
-  rat_hardware.led_white_.blinkByFrequency(1);
+  // rat_hardware.led_red_.blinkByFrequency(1);
+  // rat_hardware.led_white_.blinkByFrequency(1);
   xTimerStart(timer_1ms, 0);
   xTimerStart(timer_20ms, 0);
   rat_hardware.init();
@@ -116,7 +116,7 @@ void loop() {
   wifi_client.transmitAndReceive((uint8_t *)tx_data, strlen(tx_data), (uint8_t *)rx_data, &receive_data_len);
   printf("%s\r\n", rx_data);
 #endif
-  controlMotorByKeyboard();
-  // Serial.printf("time = %d, red = %d, white = %d\r\n", timer::Timer1ms_getCurrentTime(), led_red.getStatus(), led_white.getStatus());
-  // Serial.printf("time = %d, status = %d\r\n", limit_switch.getTime(), limit_switch.getStatus());
+  // controlMotorByKeyboard();
+  //  Serial.printf("time = %d, red = %d, white = %d\r\n", timer::Timer1ms_getCurrentTime(), led_red.getStatus(), led_white.getStatus());
+  //  Serial.printf("time = %d, status = %d\r\n", limit_switch.getTime(), limit_switch.getStatus());
 }
