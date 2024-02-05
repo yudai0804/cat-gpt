@@ -114,13 +114,15 @@ class TCPServer {
   #receive(ip, header, data_array) {
     let cmd = this.#command_list.getCommandByValue(header);
     switch (cmd.value) {
-      case this.#command_list.getCommandByValue("StateInformation").value:
+      case this.#command_list.getCommandByName("StateInformation").value:
         // TODO: おかしなstateが来た時は値を更新しない処理を追加する
         let tmp_state = this.#state_list.getStateByValue(data_array[0], data_array[1]);
         if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
         else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
         // ACKを返す
-        let ack = this.#command_list.getCommandByValue("StateInformationACK").value;
+        let ack = this.#command_list.getCommandByName("StateInformationACK").value;
+        console.log("print state information")
+        console.log(this.#rat_state);
         this.#addOrder(ip, ack, []);
         break;
     }
@@ -167,11 +169,14 @@ class TCPServer {
     // IPが異常な値でないかチェック
     if (this.#RAT_IP == this.#FEEDER_IP)
       console.log("ip address error");
-    this.#command_list = CommandList();
-    this.#state_list = StateList();
+    this.#command_list = new CommandList();
+    this.#state_list = new StateList();
+    this.#rat_transmit_queue = [];
+    this.#feeder_transmit_queue = [];
     const server = net.createServer(socket => {
       socket.on('data', data => {
         console.log(`${data} from ${socket.remoteAddress}`);
+        console.log(data);
         this.#onReceive(socket.remoteAddress, data);
         let tx_data = this.#transmit(socket.remoteAddress);
         if (tx_data.length != 0)
@@ -189,4 +194,4 @@ class TCPServer {
   }
 }
 
-tcp = new TCPServer(5000, 'localhost', 'localhost', "192.168.100.123");
+tcp = new TCPServer(5000, '127.0.0.1', '127.0.0.1', "192.168.100.123");
