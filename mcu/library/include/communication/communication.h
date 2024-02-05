@@ -198,6 +198,9 @@ public:
       // 通信に失敗した場合はNoConnectに移動
       changeState(main_state::Idle, idle::sub_state::NoConnect);
       return;
+    } else {
+      // 通信に成功した場合はIdleに移動
+      changeState(main_state::Idle, idle::sub_state::Idle);
     }
 
     decode(receive_buffer, receive_buffer_length);

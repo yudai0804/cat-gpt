@@ -50,12 +50,12 @@ std::vector<std::vector<State>> state_list = {
 namespace idle {
 
 void idle_process() {
-  rat_hardware.led_white_.blinkByFrequency(1);
-  rat_hardware.led_red_.blinkByFrequency(1);
+  rat_hardware.led_white_.blinkByFrequency(5);
+  rat_hardware.led_red_.blinkByFrequency(5);
 }
 
 void no_connect_process() {
-  rat_hardware.led_white_.blinkByFrequency(1);
+  rat_hardware.led_white_.blinkByFrequency(5);
   rat_hardware.led_red_.blinkByFrequency(0);
 }
 void changing_state_process() {

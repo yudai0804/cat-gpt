@@ -1,5 +1,13 @@
 const net = require('net');
+const { clearTimeout } = require('timers');
 const Buffer = require('buffer/').Buffer;
+
+class Device {
+  constructor() { }
+  getRat() { return "Rat"; }
+  getFeeder() { return "Feeder"; }
+}
+const device_name = new Device();
 
 class Command {
   name;
@@ -35,6 +43,8 @@ class CommandList {
     return this.#command.find(cmd => { return cmd.value == value });
   }
 }
+
+const command_list = new CommandList();
 
 class State {
   main_state;
@@ -81,21 +91,25 @@ class StateList {
   }
 }
 
+const state_list = new StateList();
+
 class TCPServer {
   #port;
   #ip_address;
   #RAT_IP;
   #FEEDER_IP;
-  /** @type {CommandList} */
-  #command_list;
-  /** @type {StateList} */
-  #state_list;
   #rat_transmit_queue;
   #feeder_transmit_queue;
   /** @type {State} */
   #rat_state;
   /** @type {State} */
   #feeder_state;
+  // TODO: alive実装する
+  #is_rat_alive;
+  #is_feeder_alive;
+  #rat_timer_id;
+  #feeder_timer_id;
+  #TIMEOUT;
 
   #addOrder(ip, header, data_array = []) {
     if (ip == this.#RAT_IP) {
@@ -117,19 +131,28 @@ class TCPServer {
   }
 
   #receive(ip, header, data_array) {
-    let cmd = this.#command_list.getCommandByValue(header);
+    let cmd = command_list.getCommandByValue(header);
     switch (cmd.value) {
-      case this.#command_list.getCommandByName("StateInformation").value:
+      case command_list.getCommandByName("StateInformation").value: {
         // TODO: おかしなstateが来た時は値を更新しない処理を追加する
-        let tmp_state = this.#state_list.getStateByValue(data_array[0], data_array[1]);
+        let tmp_state = state_list.getStateByValue(data_array[0], data_array[1]);
         if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
         else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
         // ACKを返す
-        let ack = this.#command_list.getCommandByName("StateInformationACK").value;
-        console.log("print state information")
-        console.log(this.#rat_state);
+        let ack = command_list.getCommandByName("StateInformationACK").value;
+        // console.log("print state information")
+        // console.log(this.#rat_state);
         this.#addOrder(ip, ack, []);
         break;
+      }
+      case command_list.getCommandByName("ChangeStateACK").value: {
+        let tmp_state = state_list.getStateByValue(data_array[1], data_array[2]);
+        if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
+        else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
+        console.log("print change state ack");
+        console.log(this.#rat_state);
+        break;
+      }
     }
   }
 
@@ -151,7 +174,33 @@ class TCPServer {
     }
   }
 
+  #clearTimer(ip, data) {
+    if (ip == this.#RAT_IP) {
+      if (!this.#is_rat_alive) {
+        this.#is_rat_alive = 1;
+        console.log("rat connect");
+      }
+      clearTimeout(this.#rat_timer_id);
+      this.#rat_timer_id = setTimeout(() => {
+        this.#is_rat_alive = 0;
+        console.log("rat connect lost");
+      }, this.#TIMEOUT);
+    } else if (ip == this.#FEEDER_IP) {
+      if (!this.#is_feeder_alive) {
+        this.#is_feeder_alive = 1;
+        console.log("feeder connect");
+      }
+      clearTimeout(this.#feeder_timer_id);
+      this.#feeder_timer_id = setTimeout(() => {
+        this.#is_feeder_alive = 0;
+        console.log("feeder connect lost");
+      }, this.#TIMEOUT);
+
+    }
+  }
+
   #onReceive(ip, data) {
+    this.#clearTimer(ip, data);
     this.#decodeOrder(ip, data);
   }
 
@@ -166,22 +215,44 @@ class TCPServer {
     }
   }
 
+  /** 
+   * @param {State} state
+   */
+  transmitChangeState(name, state) {
+    let data = [state.main_value, state.sub_value];
+    let ip;
+    if (name == device_name.getRat()) { ip = this.#RAT_IP; }
+    else if (name == device_name.getFeeder()) { ip = this.#FEEDER_IP; }
+    let header = command_list.getCommandByName("ChangeState");
+    this.#addOrder(ip, header.value, data);
+  }
+
   constructor(port, my_ip, rat_ip, feeder_ip) {
     this.#port = port;
     this.#ip_address = my_ip;
     this.#RAT_IP = rat_ip;
     this.#FEEDER_IP = feeder_ip;
+    this.#TIMEOUT = 2000;
     // IPが異常な値でないかチェック
     if (this.#RAT_IP == this.#FEEDER_IP)
       console.log("ip address error");
-    this.#command_list = new CommandList();
-    this.#state_list = new StateList();
     this.#rat_transmit_queue = [];
     this.#feeder_transmit_queue = [];
+
+    this.#rat_timer_id = setTimeout(() => {
+      this.#is_rat_alive = 0;
+      console.log("rat connect lost");
+    }, this.#TIMEOUT);
+
+    this.#feeder_timer_id = setTimeout(() => {
+      this.#is_feeder_alive = 0;
+      console.log("feeder connect lost");
+    }, this.#TIMEOUT);
+
     const server = net.createServer(socket => {
       socket.on('data', data => {
-        console.log(`${data} from ${socket.remoteAddress}`);
-        console.log(data);
+        // console.log(`${data} from ${socket.remoteAddress}`);
+        // console.log(data);
         this.#onReceive(socket.remoteAddress, data);
         let tx_data = this.#transmit(socket.remoteAddress);
         if (tx_data.length != 0)
@@ -191,13 +262,26 @@ class TCPServer {
       });
 
       socket.on('close', () => {
-        console.log("client close connection");
+        // console.log("client close connection");
       })
     });
     server.listen(this.#port, this.#ip_address);
     console.log(`create server: port = ${this.#port}, ip = ${this.#ip_address}`);
   }
+
+  getIsAlive(name) {
+    if (name == device_name.getRat()) return this.#is_rat_alive;
+    else if (name == device_name.getFeeder()) return this.#is_feeder_alive;
+    return undefined;
+  }
 }
 
 // tcp = new TCPServer(5000, '192.168.227.10', '127.168.227.123', "192.168.100.123");
-tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+
+/*
+setInterval(() => {
+  if (tcp.getIsAlive(device_name.getRat()))
+    tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Idle", "NoConnect"))
+}, 5000);
+*/
