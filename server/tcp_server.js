@@ -1,5 +1,5 @@
 const net = require('net');
-const { clearTimeout } = require('timers');
+const { clearTimeout, clearInterval } = require('timers');
 const Buffer = require('buffer/').Buffer;
 
 class Device {
@@ -96,6 +96,41 @@ class StateList {
 
 const state_list = new StateList();
 
+class CheckACK {
+  #is_wait_ack;
+  #timer_id;
+  #retry_count;
+  #MAX_RETRY_COUNT;
+  constructor() {
+    this.#is_wait_ack = [];
+    this.#timer_id = [];
+    this.#retry_count = [];
+    this.#MAX_RETRY_COUNT = 1;
+  }
+
+  startACK(header, func) {
+    this.#is_wait_ack[header] = 1;
+    this.#retry_count[header] = 0;
+    this.#timer_id[header] = setInterval(() => {
+      if (this.#retry_count < this.#MAX_RETRY_COUNT) {
+        console.log("ack error");
+        console.log(command_list.getCommandByValue(header));
+        clearInterval(this.#timer_id[header]);
+      }
+      func();
+      this.#retry_count[header]++;
+    }, 1000);
+  }
+
+  receiveACK(header) {
+    if (this.#is_wait_ack[header] == 1) {
+      this.#is_wait_ack = 0;
+      this.#retry_count = 0;
+      clearInterval(this.#timer_id[header]);
+    }
+  }
+}
+
 class TCPServer {
   #port;
   #ip_address;
@@ -113,6 +148,8 @@ class TCPServer {
   #rat_timer_id;
   #feeder_timer_id;
   #TIMEOUT;
+  /** @CheckACK */
+  #rat_check_ack;
 
   #addOrder(ip, header, data_array = []) {
     if (ip == this.#RAT_IP) {
@@ -134,6 +171,10 @@ class TCPServer {
   }
 
   #receive(ip, header, data_array) {
+    // ack check
+    if (ip == this.#RAT_IP) {
+      this.#rat_check_ack.receiveACK(header);
+    }
     let cmd = command_list.getCommandByValue(header);
     switch (cmd.value) {
       case command_list.getCommandByName("StateInformation").value: {
@@ -234,12 +275,19 @@ class TCPServer {
    * @param {State} state
    */
   transmitChangeState(name, state) {
-    let data = [state.main_value, state.sub_value];
-    let ip;
-    if (name == device_name.getRat()) { ip = this.#RAT_IP; }
-    else if (name == device_name.getFeeder()) { ip = this.#FEEDER_IP; }
-    let header = command_list.getCommandByName("ChangeState");
-    this.#addOrder(ip, header.value, data);
+    transmit = () => {
+      let data = [state.main_value, state.sub_value];
+      let ip;
+      if (name == device_name.getRat()) { ip = this.#RAT_IP; }
+      else if (name == device_name.getFeeder()) { ip = this.#FEEDER_IP; }
+      let header = command_list.getCommandByName("ChangeState");
+      this.#addOrder(ip, header.value, data);
+    }
+    if (name == device_name.getRat()) {
+      this.#rat_check_ack.startACK(command_list.getCommandByName("ChangeStateACK"), transmit);
+    } else if (name == device_name.getFeeder()) {
+      // TODO: 実装する
+    }
   }
 
   constructor(port, my_ip, rat_ip, feeder_ip) {
@@ -249,6 +297,7 @@ class TCPServer {
     console.log(this.#RAT_IP)
     this.#FEEDER_IP = feeder_ip;
     this.#TIMEOUT = 1000;
+    this.#rat_check_ack = new CheckACK();
     // IPが異常な値でないかチェック
     if (this.#RAT_IP == this.#FEEDER_IP)
       console.log("ip address error");

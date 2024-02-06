@@ -43,6 +43,17 @@ private:
   common::Buffer<uint8_t> buffer_{BUFFER_SIZE};
   timer::TimerBase *timer_;
   State DEFAULT_STATE;
+  // ACK関連
+  static constexpr int CHECK_ACK_NUMBER = 1;
+  static constexpr int ACK_TIMEOUT = 1000;
+  static constexpr int CHECK_ACK_MAX_RETRY = 1;
+  // 確認したいACKのHeader
+  uint8_t check_ack_header_list[CHECK_ACK_NUMBER] = {
+      RequestChangeState + ACK};
+  // ACK確認用タイマー
+  std::array<timer::TimerBase *, CHECK_ACK_NUMBER> check_ack_timer_;
+  bool is_ack_receive[CHECK_ACK_NUMBER];
+  int check_ack_retry_counter[CHECK_ACK_NUMBER];
 
   void convertFloatToUint8(uint8_t *uint8_data, float *float_data) {
     uint8_t data[4];
@@ -58,6 +69,26 @@ private:
       pointer[i] = uint8_data[i];
   }
 
+  void startAck(uint8_t header) {
+    for (int i = 0; i < CHECK_ACK_NUMBER; i++) {
+      if (check_ack_header_list[i] == header) {
+        is_ack_receive[i] = false;
+        check_ack_timer_[i]->reset();
+        check_ack_retry_counter[i] = 0;
+      }
+    }
+  }
+
+  void receiveAck(uint8_t header) {
+    for (int i = 0; i < CHECK_ACK_NUMBER; i++) {
+      if (check_ack_header_list[i] == header) {
+        is_ack_receive[i] = true;
+        check_ack_timer_[i]->reset();
+        check_ack_retry_counter[i] = 0;
+      }
+    }
+  }
+
   void receive(uint8_t header, uint8_t *receive_data, size_t length) {
     switch ((uint8_t)header) {
       case ChangeState: {
@@ -71,6 +102,8 @@ private:
         setOrder(ChangeState + ACK, transmit_data, LENGTH);
       } break;
       case RequestChangeState + ACK: {
+        // ACKの受信処理
+        receiveAck(RequestChangeState + ACK);
         uint8_t is_success = receive_data[0];
         if (is_success != 1) printf("RequestChangeState Failed\r\n");
         printf("request change state: ");
@@ -161,12 +194,61 @@ private:
     data[0] = (uint8_t)main;
     data[1] = (uint8_t)sub;
     setOrder(Header::RequestChangeState, data, LENGTH);
+    startAck(RequestChangeState + ACK);
+  }
+
+  RET checkState(state_t main, state_t sub) {
+    // 引数が正常かチェック
+    if (main >= main_state_number_) {
+      printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    if (sub >= sub_state_number_[main]) {
+      printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    return RET_OK;
+  }
+
+  /**
+   * @brief ステートを戻す
+   * @return
+   */
+  RET restoreState() {
+    auto tmp_previous_state = getPreviousState();
+    printf("restore ");
+    return changeState(tmp_previous_state.main, tmp_previous_state.sub);
+  }
+
+  void checkAck() {
+    for (int i = 0; i < CHECK_ACK_NUMBER; i++) {
+      bool is_timeout = (check_ack_timer_[i]->getElapsedTime() >= ACK_TIMEOUT);
+      bool check_ack_process = (is_ack_receive[i] == 0 && is_timeout == 1);
+      if (!check_ack_process) continue;
+      if (check_ack_retry_counter[i] >= CHECK_ACK_MAX_RETRY) {
+        printf("ack error: ");
+        changeState(main_state::Error, error::sub_state::Error);
+        return;
+      }
+      switch (check_ack_header_list[i]) {
+        case RequestChangeState + ACK:
+          transmitRequestChangeState(next_state_.main, next_state_.sub);
+          check_ack_timer_[i]->reset();
+          check_ack_retry_counter[i]++;
+          break;
+      }
+    }
   }
 
 public:
   Communication(driver::WifiTCPClient *client, timer::UseTimer use_timer)
       : client_(client), StateMachine() {
     timer_ = timer::createTimer(use_timer);
+    for (int i = 0; i < CHECK_ACK_NUMBER; i++) {
+      check_ack_timer_[i] = timer::createTimer(use_timer);
+      is_ack_receive[i] = true;
+      check_ack_retry_counter[i] = 0;
+    }
   }
 
   /**
@@ -211,25 +293,6 @@ public:
     }
 
     decode(receive_buffer, receive_buffer_length);
-  }
-
-  RET checkState(state_t main, state_t sub) {
-    // 引数が正常かチェック
-    if (main >= main_state_number_) {
-      printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    if (sub >= sub_state_number_[main]) {
-      printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    return RET_OK;
-  }
-
-  RET restoreState() {
-    auto tmp_previous_state = getPreviousState();
-    printf("restore ");
-    return changeState(tmp_previous_state.main, tmp_previous_state.sub);
   }
 
   /**
