@@ -68,7 +68,8 @@ class StateList {
       new State("Idle", 0x00, "Idle", 0x00),
       new State("Idle", 0x00, "NoConnect", 0x01),
       new State("Idle", 0x00, "ChangingState", 0x02),
-      new State("Search", 0x01, "Start", 0x00)
+      new State("Search", 0x01, "Start", 0x00),
+      new State("Search", 0x01, "Search", 0x01)
     ];
   }
 
@@ -245,6 +246,7 @@ class TCPServer {
     this.#port = port;
     this.#ip_address = my_ip;
     this.#RAT_IP = rat_ip;
+    console.log(this.#RAT_IP)
     this.#FEEDER_IP = feeder_ip;
     this.#TIMEOUT = 1000;
     // IPが異常な値でないかチェック
@@ -290,8 +292,8 @@ class TCPServer {
   }
 }
 
-// tcp = new TCPServer(5000, '192.168.227.10', '127.168.227.123', "192.168.100.123");
-const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
+// const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
 
 /*
 setInterval(() => {

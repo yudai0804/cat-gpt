@@ -52,10 +52,8 @@ namespace idle {
 void idle_process() {
   rat_hardware.led_white_.blinkByFrequency(5);
   rat_hardware.led_red_.blinkByFrequency(5);
-  vTaskDelay(1000);
+  vTaskDelay(3000);
   rat_com.requestChangeState(main_state::Search, search::sub_state::Start);
-  while (1) {
-  }
 }
 
 void no_connect_process() {
@@ -70,13 +68,13 @@ void changing_state_process() {
 namespace search {
 
 void start_process() {
-  vTaskDelay(1000);
-  rat_com.requestChangeState(main_state::Idle, idle::sub_state::Idle);
-  while (1) {
-  }
+  vTaskDelay(3000);
+  rat_com.requestChangeState(main_state::Search, search::sub_state::Search);
 }
 
 void search_process() {
+  vTaskDelay(3000);
+  rat_com.requestChangeState(main_state::Search, search::sub_state::Start);
 }
 
 void detect_obstacle_process() {

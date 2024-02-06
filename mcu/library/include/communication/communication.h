@@ -73,6 +73,7 @@ private:
       case RequestChangeState + ACK: {
         uint8_t is_success = receive_data[0];
         if (is_success != 1) printf("RequestChangeState Failed\r\n");
+        printf("request change state: ");
         changeState(receive_data[1], receive_data[2]);
       } break;
       case SetSearchMode: {
@@ -197,10 +198,15 @@ public:
     if (ret != RET_OK) {
       // 通信に失敗した場合はNoConnectに移動
       changeState(main_state::Idle, idle::sub_state::NoConnect);
+      printf("No Connect\r\n");
       return;
     } else {
       // 通信に成功した場合はIdleに移動
-      changeState(main_state::Idle, idle::sub_state::Idle);
+      auto state = getCurrentState();
+      if (state.main == main_state::Idle && state.sub == idle::sub_state::NoConnect) {
+        changeState(main_state::Idle, idle::sub_state::Idle);
+        printf("Connect\r\n");
+      }
     }
 
     decode(receive_buffer, receive_buffer_length);
