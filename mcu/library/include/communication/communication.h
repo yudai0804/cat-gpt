@@ -174,6 +174,7 @@ public:
    * @note この関数は送受信処理を行う箇所で呼び出すこと
    */
   void communicate() {
+    // TODO: ACKの処理ちゃんと書く
     // 送受信処理と受信時の各変数に代入処理
     uint8_t transmit_buffer[BUFFER_SIZE];
     size_t transmit_buffer_size;
@@ -201,16 +202,36 @@ public:
       printf("No Connect\r\n");
       return;
     } else {
-      // 通信に成功した場合はIdleに移動
+      // 通信に成功した場合は前回のステートに戻す
       auto state = getCurrentState();
       if (state.main == main_state::Idle && state.sub == idle::sub_state::NoConnect) {
-        changeState(main_state::Idle, idle::sub_state::Idle);
+        restoreState();
         printf("Connect\r\n");
       }
     }
 
     decode(receive_buffer, receive_buffer_length);
   }
+
+  RET checkState(state_t main, state_t sub) {
+    // 引数が正常かチェック
+    if (main >= main_state_number_) {
+      printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    if (sub >= sub_state_number_[main]) {
+      printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
+      return RET_ARGUMENT_ERROR;
+    }
+    return RET_OK;
+  }
+
+  RET restoreState() {
+    auto tmp_previous_state = getPreviousState();
+    printf("restore ");
+    return changeState(tmp_previous_state.main, tmp_previous_state.sub);
+  }
+
   /**
    * @brief ステートを移行する
    * @details 現在のステートと移行したいステートが同じだった場合はステートの遷移は行われない
@@ -221,20 +242,15 @@ public:
    * @return
    */
   RET changeState(state_t main, state_t sub) {
-    // 引数が正常かチェック
-    if (main >= main_state_number_) {
-      printf("main state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
-    if (sub >= sub_state_number_[main]) {
-      printf("sub state argument error\r\nmain = %3d, sub = %3d\r\n", main, sub);
-      return RET_ARGUMENT_ERROR;
-    }
+    RET ret;
+    ret = checkState(main, sub);
+    if (ret != RET_OK) return ret;
     // ステートを更新
     // ステートが変化していなかった場合はその後の処理は行わない
     bool is_changed_state = (main != current_state_.main || sub != current_state_.sub);
     if (!is_changed_state) return RET_ERROR;
 
+    previous_state_ = current_state_;
     current_state_ = state_list[main][sub];
     printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
     // 現在のステートを送信
@@ -254,10 +270,15 @@ public:
    * @return
    */
   RET requestChangeState(state_t main, state_t sub) {
+    // check_state
+    RET ret;
+    ret = checkState(main, sub);
+    if (ret != RET_OK) return ret;
     // idleステートに設定
-    RET ret = changeState(main_state::Idle, idle::sub_state::ChangingState);
+    ret = changeState(main_state::Idle, idle::sub_state::ChangingState);
     if (ret != RET_OK) return ret;
     // requestを送信
+    next_state_ = state_list[main][sub];
     transmitRequestChangeState(main, sub);
     return RET_OK;
   }

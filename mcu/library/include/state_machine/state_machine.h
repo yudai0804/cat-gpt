@@ -30,7 +30,9 @@ extern std::vector<std::vector<State>> state_list;
 
 class StateMachine {
 protected:
+  State next_state_;
   State current_state_;
+  State previous_state_;
   size_t main_state_number_;
   std::vector<size_t> sub_state_number_;
 
@@ -45,5 +47,7 @@ public:
   }
 
   State getCurrentState() { return current_state_; }
+  State getNextState() { return next_state_; }
+  State getPreviousState() { return previous_state_; }
 };
 }  // namespace state_machine

@@ -16,6 +16,8 @@ StateMachine::StateMachine() {
   }
   // 初期ステートを設定
   current_state_ = state_list[main_state::Idle][idle::sub_state::NoConnect];
+  // ステートの初期値はIdle::Idleに設定
+  previous_state_ = next_state_ = state_list[main_state::Idle][idle::sub_state::Idle];
 }
 
 }  // namespace state_machine
