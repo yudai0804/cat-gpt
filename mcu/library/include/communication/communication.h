@@ -34,6 +34,7 @@ public:
     SetFoodQuantity,
     ManualMove,
     ManualFeed,
+    StartBuzzer,
     ACK = 0x80,
   };
 
@@ -134,7 +135,7 @@ private:
         uint8_t transmsit_data[LENGTH];
         float manual_velocity, manual_omega;
         convertUint8ToFloat(&receive_data[0], &manual_velocity);
-        convertUint8ToFloat(&receive_data[0], &manual_omega);
+        convertUint8ToFloat(&receive_data[4], &manual_omega);
         RET ret1 = information_.setManualVelocity(manual_velocity);
         RET ret2 = information_.setManualOmega(manual_omega);
         manual_velocity = information_.getManualVelocity();
@@ -143,7 +144,12 @@ private:
         convertFloatToUint8(&transmsit_data[1], &manual_velocity);
         convertFloatToUint8(&transmsit_data[5], &manual_omega);
         setOrder(ManualMove + ACK, transmsit_data, LENGTH);
+        printf("velocity = %f, angular_velocity = %f\r\n", manual_velocity, manual_omega);
       } break;
+      case StartBuzzer: {
+        // TODO: 実装する
+        break;
+      }
       case StateInformation + ACK:
         // printf("state information ack received\r\n");
         break;

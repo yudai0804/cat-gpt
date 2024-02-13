@@ -23,7 +23,13 @@ class CommandList {
     this.#command = [
       new Command("StateInformation", 0x00),
       new Command("ChangeState", 0x01),
-      new Command("RequestChangeState", 0x02)
+      new Command("RequestChangeState", 0x02),
+      new Command("SetSearchMode", 0x03),
+      new Command("SetAppealMode", 0x04),
+      new Command("SetFoodQuantity", 0x05),
+      new Command("ManualMove", 0x06),
+      new Command("ManualFeed", 0x07),
+      new Command("StartBuzzer", 0x08)
     ];
     // ACKを追加
     // ACKのvalueは0x80
@@ -69,7 +75,20 @@ class StateList {
       new State("Idle", 0x00, "NoConnect", 0x01),
       new State("Idle", 0x00, "ChangingState", 0x02),
       new State("Search", 0x01, "Start", 0x00),
-      new State("Search", 0x01, "Search", 0x01)
+      new State("Search", 0x01, "Search", 0x01),
+      new State("Search", 0x01, "DetectObstacle", 0x02),
+      new State("Search", 0x01, "AvoidObstacle", 0x03),
+      new State("Search", 0x01, "AppealToCat", 0x04),
+      new State("Search", 0x01, "Finish", 0x05),
+      new State("CaughtByCat", 0x02, "Start", 0x00),
+      new State("CaughtByCat", 0x02, "Caught", 0x01),
+      new State("CaughtByCat", 0x02, "Finish", 0x02),
+      new State("Feed", 0x03, "Start", 0x00),
+      new State("Feed", 0x03, "AppealToCat", 0x01),
+      new State("Feed", 0x03, "Feed", 0x02),
+      new State("Feed", 0x03, "Finish", 0x03),
+      new State("Manual", 0x04, "Manual", 0x00),
+      new State("Error", 0x05, "Error", 0x00)
     ];
   }
 
@@ -291,6 +310,18 @@ class TCPServer {
     }
   }
 
+  transmitManualMove(velocity, angular_velocity) {
+    let transmit = () => {
+      let float32_data = new Float32Array([velocity, angular_velocity]);
+      let data = new Buffer.from(float32_data.buffer);
+      console.log(data.buffer)
+      let ip = this.#RAT_IP;
+      let header = command_list.getCommandByName("ManualMove");
+      this.#addOrder(ip, header.value, data);
+    };
+    this.#rat_check_ack.startACK(command_list.getCommandByName("ManualMoveACK").value, transmit);
+  }
+
   constructor(port, my_ip, rat_ip, feeder_ip) {
     this.#port = port;
     this.#ip_address = my_ip;
@@ -345,9 +376,19 @@ class TCPServer {
 const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
 // const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
 
-
+/*
 setInterval(() => {
   if (tcp.getIsAlive(device_name.getRat()))
     tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Idle", "Idle"))
 }, 5000);
-
+*/
+/*
+setInterval(() => {
+  if (tcp.getIsAlive(device_name.getRat())) {
+    let v = Math.random();
+    let av = Math.random();
+    console.log(`v = ${v}, av = ${av}`);
+    tcp.transmitManualMove(v, av);
+  }
+}, 5000);
+*/

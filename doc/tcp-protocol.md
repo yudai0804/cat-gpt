@@ -38,6 +38,7 @@ headerのMSBはACK用とする。MSBが1である場合はACKである。
 | 0x05 | SetFoodQuantity | Feederが出す餌の量を設定 |
 | 0x06 | ManualMove | manualステートのときのみ有効。  設定したしたパラメーターでRatが移動する。 |
 | 0x07 | ManualFeed | manualステートのときのみ有効。  設定した量の餌をFeederが出す |
+| 0x08 | StartBuzzer | 規定の音を鳴らす |
 
 ## StateInformation  
 
@@ -209,3 +210,23 @@ Server->基板
 | 1 | uint8_t | length | 2 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
 | 3 | uint8_t | quantity | 現在の値 |
+
+## StartBuzzer
+
+Server->基板  
+メインステートがmanualステートのときのみ有効となる  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x07(StartBuzzer) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | mode | |
+
+## StartBuzzer ACK
+
+基板 -> Server  
+メインステートがmanualステートのときのみ有効となる  
+| offset | type | role | details |
+| - | - | - | - |
+| 0 | uint8_t | header | 0x80 + 0x07(ManualFeed) |
+| 1 | uint8_t | length | 1 |
+| 2 | uint8_t | mode | |
