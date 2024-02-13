@@ -112,9 +112,8 @@ class CheckACK {
     this.#is_wait_ack[header] = 1;
     this.#retry_count[header] = 0;
     this.#timer_id[header] = setInterval(() => {
-      if (this.#retry_count < this.#MAX_RETRY_COUNT) {
+      if (this.#retry_count[header] > this.#MAX_RETRY_COUNT) {
         console.log("ack error");
-        console.log(command_list.getCommandByValue(header));
         clearInterval(this.#timer_id[header]);
       }
       func();
@@ -124,8 +123,8 @@ class CheckACK {
 
   receiveACK(header) {
     if (this.#is_wait_ack[header] == 1) {
-      this.#is_wait_ack = 0;
-      this.#retry_count = 0;
+      this.#is_wait_ack[header] = 0;
+      this.#retry_count[header] = 0;
       clearInterval(this.#timer_id[header]);
     }
   }
@@ -275,16 +274,18 @@ class TCPServer {
    * @param {State} state
    */
   transmitChangeState(name, state) {
-    transmit = () => {
+    let transmit = () => {
       let data = [state.main_value, state.sub_value];
       let ip;
-      if (name == device_name.getRat()) { ip = this.#RAT_IP; }
+      if (name == device_name.getRat()) {
+        ip = this.#RAT_IP;
+      }
       else if (name == device_name.getFeeder()) { ip = this.#FEEDER_IP; }
       let header = command_list.getCommandByName("ChangeState");
       this.#addOrder(ip, header.value, data);
-    }
+    };
     if (name == device_name.getRat()) {
-      this.#rat_check_ack.startACK(command_list.getCommandByName("ChangeStateACK"), transmit);
+      this.#rat_check_ack.startACK(command_list.getCommandByName("ChangeStateACK").value, transmit);
     } else if (name == device_name.getFeeder()) {
       // TODO: 実装する
     }
@@ -344,9 +345,9 @@ class TCPServer {
 const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
 // const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
 
-/*
+
 setInterval(() => {
   if (tcp.getIsAlive(device_name.getRat()))
-    tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Idle", "NoConnect"))
+    tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Idle", "Idle"))
 }, 5000);
-*/
+

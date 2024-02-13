@@ -94,6 +94,7 @@ private:
       case ChangeState: {
         constexpr uint8_t LENGTH = 3;
         uint8_t transmit_data[LENGTH];
+        printf("server change state: ");
         RET ret = changeState(receive_data[0], receive_data[1]);
         State state = getCurrentState();
         transmit_data[0] = (ret == RET_OK) ? 1 : 0;
@@ -293,6 +294,8 @@ public:
     }
 
     decode(receive_buffer, receive_buffer_length);
+    // ackを確認
+    checkAck();
   }
 
   /**
