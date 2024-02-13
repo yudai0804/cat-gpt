@@ -103,6 +103,7 @@ public:
     DO_ESP32(ledcAttachPin(hardware_.bin1_pin, hardware_.bin1_channel));
     DO_ESP32(ledcAttachPin(hardware_.bin2_pin, hardware_.bin2_channel));
     // 出力をonにする
+    output(0, 0);
     enableMotorDriver();
   }
 
