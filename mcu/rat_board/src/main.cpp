@@ -6,6 +6,7 @@
 #include "driver/led.h"
 #include "driver/switch.h"
 #include "driver/wrapper/wifi_tcp_client.h"
+#include "esp32-hal-cpu.h"
 #include "freertos/FreeRTOS.h"
 #include "private_information.h"
 #include "rat.h"
@@ -27,7 +28,8 @@ communication::Communication rat_com{&wifi_client, timer::USE_TIMER_1MS};
 rat::Hardware rat_hardware;
 bool is_initialize_end = false;
 // タイマーは仮
-
+timer::Timer1ms test_timer;
+float test_target;
 void timer1msHandler(void *param) {
   timer::Timer1ms_update();
   if (!is_initialize_end) return;
@@ -37,6 +39,21 @@ void timer1msHandler(void *param) {
 void timer20msHandler(void *param) {
   if (!is_initialize_end) return;
   timer::Timer20ms_update();
+
+  state_machine::other::on_interrupt_process();
+
+  //   printf("limit sw = %d\r\n", rat_hardware.getLimitSwitch());
+  /*
+  float target;
+  if (test_timer.getElapsedTime() < 2000) {
+    target = -0.4f;
+  } else {
+    target = 0;
+  }
+  */
+  // 一旦コメントアウト
+  // rat_hardware.runByVelocity(target, 0);
+
   // 使わないのでコメントアウト
   // rat_hardware.onInterruptForToF();
 }
@@ -51,11 +68,22 @@ void timer50msProcess(void) {
   rat_com.communicate();
 }
 
+void checkLimitSwitch() {
+  auto current_state = rat_com.getCurrentState();
+  auto is_caught_by_cat = (current_state.main == state_machine::main_state::CaughtByCat);
+  auto is_pushed_limit_switch = (rat_hardware.getLimitSwitch() == driver::SwitchStatus::DETECT_MORE_1000MS);
+  if (!is_caught_by_cat && is_pushed_limit_switch) {
+    rat_com.requestChangeState(state_machine::main_state::CaughtByCat, state_machine::caught_by_cat::sub_state::Start);
+  }
+}
+
 /**
  * 状態遷移用タスク
  */
 void stateMachineTask(void *param) {
   while (1) {
+    // 今は使わないのでコメントアウト
+    // checkLimitSwitch();
     rat_com.onInterruptStateFunction();
   }
 }
@@ -115,6 +143,8 @@ void setup() {
   is_initialize_end = true;
   // 状態遷移タスクの開始
   xTaskCreatePinnedToCore(stateMachineTask, "STATE_MACHINE_TASK", 4096, NULL, 1, NULL, APP_CPU_NUM);
+
+  test_timer.reset();
 }
 
 int count = 0;

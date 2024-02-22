@@ -325,6 +325,9 @@ public:
     previous_state_ = current_state_;
     current_state_ = state_list[main][sub];
     printf("main = %3d, sub = %3d, name = %s\r\n", current_state_.main, current_state_.sub, current_state_.name);
+
+    other::change_state_process();
+
     // 現在のステートを送信
     transmitStateInformation();
     return RET_OK;

@@ -55,7 +55,7 @@ public:
   driver::Switch ui_switch_{timer::USE_TIMER_1MS, 27, 1};
   driver::ToF tof_{&vl53l0x_};
   // 制御関連
-  control::Trapezoid trapezoid_velocity_{1.0f, 0.01f};
+  control::Trapezoid trapezoid_velocity_{1.0f, 0.04f};
   control::Trapezoid trapezoid_omega_{1.0f, 0.01f};
   control::TwoWheel two_wheel_{1.0f};
 
@@ -66,6 +66,10 @@ public:
     Wire.begin(16, 17, 100000);
     buzzer_.init();
     drv8835_.init();
+    // 回転方向を反対向きに設定
+    drv8835_.setDirection(driver::DRV8835::NEGATIVE_DIRECTION, driver::DRV8835::NEGATIVE_DIRECTION);
+    // 最大出力を設定
+    drv8835_.setMaxOutput(0.5f);
     led_red_.init();
     led_white_.init();
     limit_switch_.init();

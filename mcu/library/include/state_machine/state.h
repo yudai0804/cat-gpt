@@ -9,6 +9,13 @@
 
 namespace state_machine {
 
+namespace other {
+
+void change_state_process();
+void on_interrupt_process();
+
+}  // namespace other
+
 namespace main_state {
 enum Name : state_t {
   Idle,

@@ -1,6 +1,7 @@
 const net = require('net');
 const { clearTimeout, clearInterval } = require('timers');
 const Buffer = require('buffer/').Buffer;
+const keypress = require('keypress');
 
 class Device {
   constructor() { }
@@ -371,10 +372,15 @@ class TCPServer {
     else if (name == device_name.getFeeder()) return this.#is_feeder_alive;
     return undefined;
   }
+
+  test() { console.log("hello test") }
 }
 
+console.log("hello tcp server")
 const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
 // const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+
+module.exports = { tcp, state_list, device_name };
 
 /*
 setInterval(() => {
