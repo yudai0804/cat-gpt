@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "buffer": "^6.0.3",
+    "keypress": "^0.2.1",
     "net": "^1.0.2"
   }
 }
