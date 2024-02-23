@@ -285,17 +285,20 @@ public:
     }
 #endif
     ret = client_->transmitAndReceive(transmit_buffer, transmit_buffer_size, receive_buffer, &receive_buffer_length);
+    auto state = getCurrentState();
     if (ret != RET_OK) {
+      if (state.main == main_state::Idle && state.sub == idle::sub_state::NoConnect) {
+        return;
+      }
       // 通信に失敗した場合はNoConnectに移動
-      changeState(main_state::Idle, idle::sub_state::NoConnect);
       printf("No Connect\r\n");
+      changeState(main_state::Idle, idle::sub_state::NoConnect);
       return;
     } else {
       // 通信に成功した場合は前回のステートに戻す
-      auto state = getCurrentState();
       if (state.main == main_state::Idle && state.sub == idle::sub_state::NoConnect) {
-        restoreState();
         printf("Connect\r\n");
+        restoreState();
       }
     }
 

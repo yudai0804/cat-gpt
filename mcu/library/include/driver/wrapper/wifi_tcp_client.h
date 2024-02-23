@@ -64,7 +64,9 @@ public:
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      printf("client connect error\r\n");
+      // 何回も失敗のログが出るとうざいので、1回だけ出るようにする
+      if (is_connected_)
+        printf("wifi connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -87,7 +89,9 @@ public:
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      printf("client connect error\r\n");
+      // 何回も失敗のログが出るとうざいので、1回だけ出るようにする
+      if (is_connected_)
+        printf("wifi connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -95,7 +99,9 @@ public:
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_->getElapsedTime() >= TIMEOUT_MS) {
-        printf("receive timeout\r\n");
+        // 何回も失敗のログが出るとうざいので、1回だけ出るようにする
+        if (is_connected_)
+          printf("wifi receive timeout\r\n");
         client.stop();
         is_connected_ = false;
         return RET_ERROR;
@@ -119,7 +125,9 @@ public:
     WiFiClient client;
     // 通信確立
     if (!client.connect(host_, port_, TIMEOUT_MS)) {
-      printf("client connect error\r\n");
+      // 何回も失敗のログが出るとうざいので、1回だけ出るようにする
+      if (is_connected_)
+        printf("wifi connect error\r\n");
       is_connected_ = false;
       return RET_ERROR;
     }
@@ -130,7 +138,9 @@ public:
     // データを受信するまで待機。受信に一定時間以上かかった場合はタイムアウト
     while (client.available() == 0) {
       if (timer_->getElapsedTime() >= TIMEOUT_MS) {
-        printf("receive timeout\r\n");
+        // 何回も失敗のログが出るとうざいので、1回だけ出るようにする
+        if (is_connected_)
+          printf("wifi receive timeout\r\n");
         client.stop();
         is_connected_ = false;
         return RET_ERROR;

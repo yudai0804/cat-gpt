@@ -7,6 +7,7 @@
 #include "driver/switch.h"
 #include "driver/wrapper/wifi_tcp_client.h"
 #include "esp32-hal-cpu.h"
+#include "esp32-hal-log.h"
 #include "freertos/FreeRTOS.h"
 #include "private_information.h"
 #include "rat.h"
@@ -128,6 +129,7 @@ void controlMotorByKeyboard() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  printf("program start\r\n");
   // タイマー関連を初期化
   timer_1ms = xTimerCreate("TIM_1MS", 1, pdTRUE, NULL, timer1msHandler);
   timer_20ms = xTimerCreate("TIM_20MS", 20, pdTRUE, NULL, timer20msHandler);
