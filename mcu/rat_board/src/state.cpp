@@ -150,7 +150,7 @@ namespace manual {
 void manual_process() {
   auto manual_information = rat_com.getInformation();
   rat_hardware.runByVelocity(manual_information.getManualVelocity(), manual_information.getManualOmega());
-  printf("manual\r\n");
+  // printf("manual\r\n");
 }
 }  // namespace manual
 

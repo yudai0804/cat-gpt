@@ -16,6 +16,7 @@
 #include "state_machine/state.h"
 #include "state_machine/state_machine.h"
 #include "timer/timer.h"
+#include "timer/timer_1ms.h"
 #include "timer/timer_base.h"
 
 namespace communication {
@@ -151,6 +152,7 @@ private:
         break;
       }
       case StateInformation + ACK:
+        // printf("%d\r\n", timer::Timer1ms_getCurrentTime());
         // printf("state information ack received\r\n");
         break;
     }

@@ -66,6 +66,7 @@ void timer50msProcess(void) {
   static timer::Timer1ms interval_timer;
   if (interval_timer.getElapsedTime() < 50) return;
   interval_timer.reset();
+  // printf("%d\r\n", timer::Timer1ms_getCurrentTime());
   rat_com.communicate();
 }
 

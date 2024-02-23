@@ -126,27 +126,44 @@ class CheckACK {
     this.#timer_id = [];
     this.#retry_count = [];
     this.#MAX_RETRY_COUNT = 1;
+    this.clearACK();
   }
 
   startACK(header, func) {
     this.#is_wait_ack[header] = 1;
     this.#retry_count[header] = 0;
+    func();
     this.#timer_id[header] = setInterval(() => {
       if (this.#retry_count[header] > this.#MAX_RETRY_COUNT) {
         console.log("ack error");
         clearInterval(this.#timer_id[header]);
+        this.#is_wait_ack[header] = 2;
+      } else {
+        func();
+        this.#retry_count[header]++;
       }
-      func();
-      this.#retry_count[header]++;
     }, 1000);
   }
 
   receiveACK(header) {
     if (this.#is_wait_ack[header] == 1) {
-      this.#is_wait_ack[header] = 0;
-      this.#retry_count[header] = 0;
       clearInterval(this.#timer_id[header]);
+      this.#retry_count[header] = 0;
+      this.#is_wait_ack[header] = 0;
     }
+  }
+
+  clearACK() {
+    let command = command_list.getCommand();
+    for (let i = 0; i < command.length; i++) {
+      this.#is_wait_ack[command[i].value] = 0;
+      this.#retry_count[command[i].value] = 0;
+      clearInterval(this.#timer_id[command[i]]);
+    }
+  }
+
+  getIsWaitAck(header) {
+    return this.#is_wait_ack[header];
   }
 }
 
@@ -312,10 +329,15 @@ class TCPServer {
   }
 
   transmitManualMove(velocity, angular_velocity) {
+    // 命令が連続して来たとき用の対策
+    if (this.#rat_check_ack.getIsWaitAck(command_list.getCommandByName("ManualMoveACK").value) == 1) {
+      // console.log("loop", this.#rat_check_ack.getIsWaitAck(command_list.getCommandByName("ManualMoveACK").value));
+      return;
+    }
+
     let transmit = () => {
       let float32_data = new Float32Array([velocity, angular_velocity]);
       let data = new Buffer.from(float32_data.buffer);
-      console.log(data.buffer)
       let ip = this.#RAT_IP;
       let header = command_list.getCommandByName("ManualMove");
       this.#addOrder(ip, header.value, data);
@@ -346,17 +368,20 @@ class TCPServer {
       this.#is_feeder_alive = 0;
       console.log("feeder connect lost");
     }, this.#TIMEOUT);
-
+    let id;
     const server = net.createServer(socket => {
       socket.on('data', data => {
+        //console.log(start_date - new Date())
         // console.log(`${data} from ${socket.remoteAddress}`);
-        // console.log(data);
+        //console.log(data);
         this.#onReceive(socket.remoteAddress, data);
         let tx_data = this.#transmit(socket.remoteAddress);
         if (tx_data.length != 0)
           socket.write(tx_data);
         else
           console.log("tx_data length is 0")
+        clearTimeout(id);
+        id = setTimeout(() => { this.#rat_check_ack.clearACK(); console.log("clear ack") }, 5000);
       });
 
       socket.on('close', () => {
@@ -373,12 +398,16 @@ class TCPServer {
     return undefined;
   }
 
-  test() { console.log("hello test") }
+  getState(name) {
+    if (name == device_name.getRat()) return this.#rat_state;
+    else if (name == device_name.getFeeder()) return this.#feeder_state;
+    return undefined;
+  }
+
 }
 
-console.log("hello tcp server")
-const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
-// const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+// const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
+const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
 
 module.exports = { tcp, state_list, device_name };
 

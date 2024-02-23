@@ -1,6 +1,9 @@
 const keypress = require('keypress');
 const { tcp, state_list, device_name } = require('./tcp_server')
 
+let v = 0;
+let a = 0.1;
+
 // make `process.stdin` begin emitting "keypress" events
 keypress(process.stdin);
 
@@ -11,7 +14,22 @@ process.stdin.on('keypress', function(ch, key) {
   // console.log('got "keypress"', key);
   // console.log("ch", ch);
 
-  if (ch == 'c') tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Manual", "Manual"));
+  if (ch == 'c') {
+    tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Manual", "Manual"));
+  } else if (ch == 'w') {
+    v += a;
+    // tcp.transmitManualMove(v, 0);
+    console.log(v);
+  } else if (ch == 's') {
+    v -= a;
+    // tcp.transmitManualMove(v, 0);
+    console.log(v);
+  } else if (ch == 'e') {
+    v = 0;
+    console.log(v);
+  } else if (ch == 'S') {
+    console.log(tcp.getState(device_name.getRat()));
+  }
 
   //Ctrl + c入力のときの処理
   if (key && key.ctrl && key.name == 'c') {
@@ -22,4 +40,10 @@ process.stdin.on('keypress', function(ch, key) {
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
+let s = new Date();
+setInterval(() => {
+  if (tcp.getIsAlive(device_name.getRat())) {
+    tcp.transmitManualMove(v, 0);
 
+  }
+}, 50)
