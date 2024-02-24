@@ -1,5 +1,5 @@
 /**
- * @file feeder_process.cpp
+ * @file feeder_state.cpp
  * @brief
  */
 
@@ -147,6 +147,15 @@ namespace manual {
 
 void manual_process() {
   // TODO: 実装する
+  if (information.getIsStartManualFeed()) {
+    hardware.led_red_.blinkByFrequency(1);
+    printf("manual feed start, quantity = %f\r\n", information.getManualFeed());
+    uint32_t delay = (uint32_t)(information.getManualFeed() * 1000);
+    vTaskDelay(delay);
+    hardware.led_red_.blinkByFrequency(0);
+  } else {
+    hardware.led_red_.blinkByFrequency(0);
+  }
 }
 }  // namespace manual
 

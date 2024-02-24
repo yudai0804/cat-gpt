@@ -16,6 +16,7 @@ process.stdin.on('keypress', function(ch, key) {
 
   if (ch == 'c') {
     tcp.transmitChangeState(device_name.getRat(), state_list.getStateByName("Manual", "Manual"));
+    tcp.transmitChangeState(device_name.getFeeder(), state_list.getStateByName("Manual", "Manual"));
   } else if (ch == 'w') {
     v += a;
     // tcp.transmitManualMove(v, 0);
@@ -27,8 +28,12 @@ process.stdin.on('keypress', function(ch, key) {
   } else if (ch == 'e') {
     v = 0;
     console.log(v);
+  } else if (ch == 'f') {
+    tcp.transmitManualFeed(5.0);
+    console.log("manual feed");
   } else if (ch == 'S') {
-    console.log(tcp.getState(device_name.getRat()));
+    console.log("rat", tcp.getState(device_name.getRat()));
+    console.log("feeder", tcp.getState(device_name.getFeeder()));
   }
 
   //Ctrl + c入力のときの処理
@@ -44,6 +49,5 @@ let s = new Date();
 setInterval(() => {
   if (tcp.getIsAlive(device_name.getRat())) {
     tcp.transmitManualMove(v, 0);
-
   }
 }, 50)

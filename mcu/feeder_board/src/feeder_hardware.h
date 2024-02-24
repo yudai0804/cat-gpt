@@ -75,7 +75,7 @@ public:
     ui_switch_.init();
     // 一旦コメントアウト
     // tof_.init();
-    printf("rat hardware initialize finish\r\n");
+    printf("feeder hardware initialize finish\r\n");
   }
 
   void onInterrupt1ms() {

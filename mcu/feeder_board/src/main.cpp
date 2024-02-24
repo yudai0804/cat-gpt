@@ -23,7 +23,7 @@ TaskHandle_t state_machine_task_handle;
 
 driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, FEEDER_IP, GATEWAY, SUBNET);
 communication::Information information;
-communication::Communication com{&wifi_client, &information, timer::USE_TIMER_1MS};
+communication::Communication com(&wifi_client, &information, timer::USE_TIMER_1MS);
 Hardware hardware;
 bool is_initialize_end = false;
 // タイマーは仮
@@ -68,22 +68,11 @@ void timer50msProcess(void) {
   com.communicate();
 }
 
-void checkLimitSwitch() {
-  auto current_state = com.getCurrentState();
-  auto is_caught_by_cat = (current_state.main == state_machine::main_state::CaughtByCat);
-  auto is_pushed_limit_switch = (hardware.getLimitSwitch() == driver::SwitchStatus::DETECT_MORE_1000MS);
-  if (!is_caught_by_cat && is_pushed_limit_switch) {
-    com.requestChangeState(state_machine::main_state::CaughtByCat, state_machine::caught_by_cat::sub_state::Start);
-  }
-}
-
 /**
  * 状態遷移用タスク
  */
 void stateMachineTask(void *param) {
   while (1) {
-    // 今は使わないのでコメントアウト
-    // checkLimitSwitch();
     com.onInterruptStateFunction();
   }
 }

@@ -178,7 +178,6 @@ class TCPServer {
   #rat_state;
   /** @type {State} */
   #feeder_state;
-  // TODO: alive実装する
   #is_rat_alive;
   #is_feeder_alive;
   #rat_timer_id;
@@ -186,6 +185,8 @@ class TCPServer {
   #TIMEOUT;
   /** @CheckACK */
   #rat_check_ack;
+  /** @CheckACK */
+  #feeder_check_ack;
 
   #addOrder(ip, header, data_array = []) {
     if (ip == this.#RAT_IP) {
@@ -200,7 +201,16 @@ class TCPServer {
         this.#rat_transmit_queue.push(data_array[i]);
       }
     } else if (ip == this.#FEEDER_IP) {
-      // TODO: feederの実装する
+      if (this.#feeder_transmit_queue.length == 0) {
+        this.#feeder_transmit_queue[0] = 1;
+      } else {
+        this.#feeder_transmit_queue[0]++;
+      }
+      this.#feeder_transmit_queue.push(header);
+      this.#feeder_transmit_queue.push(data_array.length);
+      for (let i = 0; i < data_array.length; i++) {
+        this.#feeder_transmit_queue.push(data_array[i]);
+      }
     } else {
       console.log("ip error");
     }
@@ -210,6 +220,8 @@ class TCPServer {
     // ack check
     if (ip == this.#RAT_IP) {
       this.#rat_check_ack.receiveACK(header);
+    } else if (ip == this.#FEEDER_IP) {
+      this.#feeder_check_ack.receiveACK(header);
     }
     let cmd = command_list.getCommandByValue(header);
     switch (cmd.value) {
@@ -303,7 +315,10 @@ class TCPServer {
       this.#rat_transmit_queue = [];
       return ret;
     } else if (ip == this.#FEEDER_IP) {
-      // TODO: feederも実装する
+      let ret = Buffer.from(this.#feeder_transmit_queue);
+      // bufferをクリア
+      this.#feeder_transmit_queue = [];
+      return ret;
     }
   }
 
@@ -324,7 +339,7 @@ class TCPServer {
     if (name == device_name.getRat()) {
       this.#rat_check_ack.startACK(command_list.getCommandByName("ChangeStateACK").value, transmit);
     } else if (name == device_name.getFeeder()) {
-      // TODO: 実装する
+      this.#feeder_check_ack.startACK(command_list.getCommandByName("ChangeStateACK").value, transmit);
     }
   }
 
@@ -345,12 +360,30 @@ class TCPServer {
     this.#rat_check_ack.startACK(command_list.getCommandByName("ManualMoveACK").value, transmit);
   }
 
+  transmitManualFeed(quantity) {
+    // 命令が連続して来たとき用の対策
+    if (this.#feeder_check_ack.getIsWaitAck(command_list.getCommandByName("ManualFeedACK").value) == 1) {
+      return;
+    }
+
+    let transmit = () => {
+      let float32_data = new Float32Array([quantity]);
+      let data = new Buffer.from(float32_data.buffer);
+      let ip = this.#RAT_IP;
+      let header = command_list.getCommandByName("ManualFeed");
+      this.#addOrder(ip, header.value, data);
+    };
+    this.#feeder_check_ack.startACK(command_list.getCommandByName("ManualFeedACK").value, transmit);
+
+  }
+
   constructor(port, my_ip, rat_ip, feeder_ip) {
     this.#port = port;
     this.#ip_address = my_ip;
     this.#RAT_IP = rat_ip;
-    console.log(this.#RAT_IP)
+    console.log("rat_ip", this.#RAT_IP);
     this.#FEEDER_IP = feeder_ip;
+    console.log("feeder_ip", this.#FEEDER_IP);
     this.#TIMEOUT = 1000;
     this.#rat_check_ack = new CheckACK();
     // IPが異常な値でないかチェック
@@ -407,7 +440,7 @@ class TCPServer {
 }
 
 // const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
-const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.123");
+const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.124");
 
 module.exports = { tcp, state_list, device_name };
 

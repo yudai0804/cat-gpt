@@ -68,22 +68,11 @@ void timer50msProcess(void) {
   com.communicate();
 }
 
-void checkLimitSwitch() {
-  auto current_state = com.getCurrentState();
-  auto is_caught_by_cat = (current_state.main == state_machine::main_state::CaughtByCat);
-  auto is_pushed_limit_switch = (hardware.getLimitSwitch() == driver::SwitchStatus::DETECT_MORE_1000MS);
-  if (!is_caught_by_cat && is_pushed_limit_switch) {
-    com.requestChangeState(state_machine::main_state::CaughtByCat, state_machine::caught_by_cat::sub_state::Start);
-  }
-}
-
 /**
  * 状態遷移用タスク
  */
 void stateMachineTask(void *param) {
   while (1) {
-    // 今は使わないのでコメントアウト
-    // checkLimitSwitch();
     com.onInterruptStateFunction();
   }
 }
