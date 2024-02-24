@@ -7,7 +7,7 @@
 
 #include "communication/communication.h"
 #include "communication/information.h"
-#include "feeder_hardware.h"
+#include "rat_hardware.h"
 
 extern communication::Communication com;
 extern communication::Information information;
