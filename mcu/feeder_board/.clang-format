@@ -1,0 +1,15 @@
+---
+BasedOnStyle: Google
+IndentWidth: 2
+AccessModifierOffset: -2
+# BreakBeforeBinaryOperators: NonAssignment
+# AlignTrailingComments: true
+# AllowShortBlocksOnASingleLine: true
+# AllowShortCaseLabelsOnASingleLine: true
+# AllowShortFunctionsOnASingleLine: true
+# AllowShortIfStatementsOnASingleLine: true
+# AllowShortLoopsOnASingleLine: true
+ColumnLimit: 0
+# AlignAfterOpenBracket: BlockIndent
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+

@@ -195,11 +195,12 @@ Server->基板
 
 Server->基板  
 メインステートがmanualステートのときのみ有効となる  
+この命令が送られたときにのみ、排出される
 | offset | type | role | details |
 | - | - | - | - |
 | 0 | uint8_t | header | 0x07(ManualFeed) |
-| 1 | uint8_t | length | 1 |
-| 2 | uint8_t | quantity |単位は[g] |
+| 1 | uint8_t | length | 4 |
+| 2 | float | quantity |単位は[g] |
 
 ### ManualFeed ACK
 
@@ -207,9 +208,9 @@ Server->基板
 | offset | type | role | details |
 | - | - | - | - |
 | 0 | uint8_t | header | 0x80 + 0x07(ManualFeed) |
-| 1 | uint8_t | length | 2 |
+| 1 | uint8_t | length | 5 |
 | 2 | uint8_t | is_success | 成功:1,失敗:0 |
-| 3 | uint8_t | quantity | 現在の値 |
+| 3 | float | quantity | 現在の値 |
 
 ## StartBuzzer
 

@@ -1,5 +1,5 @@
 /**
- * @file rat_hardware.h
+ * @file feeder_hardware.h
  * @brief
  */
 
