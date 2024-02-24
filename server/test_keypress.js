@@ -19,11 +19,11 @@ process.stdin.on('keypress', function(ch, key) {
     tcp.transmitChangeState(device_name.getFeeder(), state_list.getStateByName("Manual", "Manual"));
   } else if (ch == 'w') {
     v += a;
-    // tcp.transmitManualMove(v, 0);
+    tcp.transmitManualMove(v, 0);
     console.log(v);
   } else if (ch == 's') {
     v -= a;
-    // tcp.transmitManualMove(v, 0);
+    tcp.transmitManualMove(v, 0);
     console.log(v);
   } else if (ch == 'e') {
     v = 0;
