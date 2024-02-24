@@ -153,6 +153,7 @@ private:
         float manual_feed;
         convertUint8ToFloat(&receive_data[0], &manual_feed);
         RET ret = information_->setManualFeed(manual_feed);
+        information_->setIsStartManualFeed(true);
         transmit_data[0] = (ret == RET_OK) ? 1 : 0;
         convertFloatToUint8(&transmit_data[1], &manual_feed);
         setOrder(ManualFeed + ACK, transmit_data, LENGTH);

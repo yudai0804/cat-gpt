@@ -1,7 +1,6 @@
 const net = require('net');
 const { clearTimeout, clearInterval } = require('timers');
 const Buffer = require('buffer/').Buffer;
-const keypress = require('keypress');
 
 class Device {
   constructor() { }
@@ -121,7 +120,9 @@ class CheckACK {
   #timer_id;
   #retry_count;
   #MAX_RETRY_COUNT;
-  constructor() {
+  #name;
+  constructor(name) {
+    this.#name = name;
     this.#is_wait_ack = [];
     this.#timer_id = [];
     this.#retry_count = [];
@@ -135,7 +136,7 @@ class CheckACK {
     func();
     this.#timer_id[header] = setInterval(() => {
       if (this.#retry_count[header] > this.#MAX_RETRY_COUNT) {
-        console.log("ack error");
+        console.log(this.#name, "ack error");
         clearInterval(this.#timer_id[header]);
         this.#is_wait_ack[header] = 2;
       } else {
@@ -187,6 +188,8 @@ class TCPServer {
   #rat_check_ack;
   /** @CheckACK */
   #feeder_check_ack;
+  #rat_clear_ack_timer;
+  #feeder_clear_ack_timer;
 
   #addOrder(ip, header, data_array = []) {
     if (ip == this.#RAT_IP) {
@@ -241,8 +244,8 @@ class TCPServer {
         let tmp_state = state_list.getStateByValue(data_array[1], data_array[2]);
         if (ip == this.#RAT_IP) this.#rat_state = tmp_state;
         else if (ip == this.#FEEDER_IP) this.#feeder_state = tmp_state;
-        // console.log("print change state ack");
-        // console.log(this.#rat_state);
+        console.log("print change state ack");
+        console.log(this.#feeder_state);
         break;
       }
       case command_list.getCommandByName("RequestChangeState").value: {
@@ -322,6 +325,16 @@ class TCPServer {
     }
   }
 
+  #clearAckTimer(name) {
+    if (name == device_name.getRat()) {
+      clearTimeout(this.#rat_clear_ack_timer);
+      this.#rat_clear_ack_timer = setTimeout(() => { this.#rat_check_ack.clearACK(); console.log("rat clear ack") }, 5000);
+    } else if (name == device_name.getFeeder()) {
+      clearTimeout(this.#feeder_clear_ack_timer);
+      this.#feeder_clear_ack_timer = setTimeout(() => { this.#feeder_check_ack.clearACK(); console.log("feeder clear ack") }, 5000);
+    }
+  }
+
   /** 
    * @param {State} state
    */
@@ -369,12 +382,11 @@ class TCPServer {
     let transmit = () => {
       let float32_data = new Float32Array([quantity]);
       let data = new Buffer.from(float32_data.buffer);
-      let ip = this.#RAT_IP;
+      let ip = this.#FEEDER_IP;
       let header = command_list.getCommandByName("ManualFeed");
       this.#addOrder(ip, header.value, data);
     };
     this.#feeder_check_ack.startACK(command_list.getCommandByName("ManualFeedACK").value, transmit);
-
   }
 
   constructor(port, my_ip, rat_ip, feeder_ip) {
@@ -385,7 +397,8 @@ class TCPServer {
     this.#FEEDER_IP = feeder_ip;
     console.log("feeder_ip", this.#FEEDER_IP);
     this.#TIMEOUT = 1000;
-    this.#rat_check_ack = new CheckACK();
+    this.#rat_check_ack = new CheckACK(device_name.getRat());
+    this.#feeder_check_ack = new CheckACK(device_name.getFeeder());
     // IPが異常な値でないかチェック
     if (this.#RAT_IP == this.#FEEDER_IP)
       console.log("ip address error");
@@ -401,20 +414,19 @@ class TCPServer {
       this.#is_feeder_alive = 0;
       console.log("feeder connect lost");
     }, this.#TIMEOUT);
-    let id;
     const server = net.createServer(socket => {
       socket.on('data', data => {
         //console.log(start_date - new Date())
         // console.log(`${data} from ${socket.remoteAddress}`);
-        //console.log(data);
+        // console.log(data);
         this.#onReceive(socket.remoteAddress, data);
         let tx_data = this.#transmit(socket.remoteAddress);
         if (tx_data.length != 0)
           socket.write(tx_data);
         else
           console.log("tx_data length is 0")
-        clearTimeout(id);
-        id = setTimeout(() => { this.#rat_check_ack.clearACK(); console.log("clear ack") }, 5000);
+        this.#clearAckTimer(device_name.getRat());
+        this.#clearAckTimer(device_name.getFeeder());
       });
 
       socket.on('close', () => {
@@ -440,7 +452,7 @@ class TCPServer {
 }
 
 // const tcp = new TCPServer(5000, '192.168.227.10', '192.168.227.123', "192.168.100.123");
-const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.100.124");
+const tcp = new TCPServer(5000, '192.168.10.111', '192.168.10.123', "192.168.10.124");
 
 module.exports = { tcp, state_list, device_name };
 

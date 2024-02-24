@@ -74,8 +74,6 @@ namespace idle {
 void idle_process() {
   hardware.led_white_.blinkByFrequency(5);
   hardware.led_red_.blinkByFrequency(5);
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Start);
 }
 
 void no_connect_process() {
@@ -90,13 +88,9 @@ void changing_state_process() {
 namespace search {
 
 void start_process() {
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Search);
 }
 
 void search_process() {
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Start);
 }
 
 void detect_obstacle_process() {

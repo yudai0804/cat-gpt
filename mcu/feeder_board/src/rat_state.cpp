@@ -74,8 +74,6 @@ namespace idle {
 void idle_process() {
   hardware.led_white_.blinkByFrequency(5);
   hardware.led_red_.blinkByFrequency(5);
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Start);
 }
 
 void no_connect_process() {
@@ -90,13 +88,9 @@ void changing_state_process() {
 namespace search {
 
 void start_process() {
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Search);
 }
 
 void search_process() {
-  vTaskDelay(3000);
-  // com.requestChangeState(main_state::Search, search::sub_state::Start);
 }
 
 void detect_obstacle_process() {
@@ -146,12 +140,13 @@ void finish_process() {
 namespace manual {
 
 void manual_process() {
-  // TODO: 実装する
   if (information.getIsStartManualFeed()) {
     hardware.led_red_.blinkByFrequency(1);
     printf("manual feed start, quantity = %f\r\n", information.getManualFeed());
     uint32_t delay = (uint32_t)(information.getManualFeed() * 1000);
     vTaskDelay(delay);
+    // clear
+    information.setIsStartManualFeed(false);
     hardware.led_red_.blinkByFrequency(0);
   } else {
     hardware.led_red_.blinkByFrequency(0);

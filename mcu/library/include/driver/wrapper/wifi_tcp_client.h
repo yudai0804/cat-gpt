@@ -57,6 +57,9 @@ public:
       }
     }
     printf("WiFi initalize success\r\n");
+    // IPAddressクラスには[]のopearatorがちゃんと定義されている
+    printf("ip = %d.%d.%d.%d\r\n", local_ip_[0], local_ip_[1], local_ip_[2], local_ip_[3]);
+
     return RET_OK;
   }
 
