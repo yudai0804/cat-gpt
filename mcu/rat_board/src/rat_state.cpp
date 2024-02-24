@@ -112,8 +112,7 @@ void finish_process() {
 namespace manual {
 
 void manual_process() {
-  auto manual_information = com.getInformation();
-  hardware.runByVelocity(manual_information.getManualVelocity(), manual_information.getManualOmega());
+  hardware.runByVelocity(information.getManualVelocity(), information.getManualOmega());
   // printf("manual\r\n");
 }
 }  // namespace manual

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "communication/communication.h"
+#include "communication/information.h"
 #include "driver/buzzer.h"
 #include "driver/drv8835.h"
 #include "driver/led.h"
@@ -20,8 +21,9 @@ TimerHandle_t timer_1ms;
 TimerHandle_t timer_20ms;
 TaskHandle_t state_machine_task_handle;
 
-driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, LOCAL_IP, GATEWAY, SUBNET);
-communication::Communication com{&wifi_client, timer::USE_TIMER_1MS};
+driver::WifiTCPClient wifi_client(timer::USE_TIMER_1MS, SSID, PASSWORD, HOST, PORT, FEEDER_IP, GATEWAY, SUBNET);
+communication::Information information;
+communication::Communication com{&wifi_client, &information, timer::USE_TIMER_1MS};
 Hardware hardware;
 bool is_initialize_end = false;
 // タイマーは仮

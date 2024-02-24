@@ -41,7 +41,7 @@ public:
 
 private:
   driver::WifiTCPClient *client_;
-  Information information_;
+  Information *information_;
   common::Buffer<uint8_t> buffer_{BUFFER_SIZE};
   timer::TimerBase *timer_;
   State DEFAULT_STATE;
@@ -115,8 +115,8 @@ private:
       case SetSearchMode: {
         constexpr uint8_t LENGTH = 2;
         uint8_t transmsit_data[LENGTH];
-        RET ret = information_.setSearchMode(receive_data[0]);
-        auto mode = information_.getSearchMode();
+        RET ret = information_->setSearchMode(receive_data[0]);
+        auto mode = information_->getSearchMode();
         transmsit_data[0] = (ret == RET_OK) ? 1 : 0;
         transmsit_data[1] = mode;
         setOrder(SetSearchMode + ACK, transmsit_data, LENGTH);
@@ -125,8 +125,8 @@ private:
       case SetAppealMode: {
         constexpr uint8_t LENGTH = 2;
         uint8_t transmsit_data[LENGTH];
-        RET ret = information_.setAppealMode(receive_data[0]);
-        auto mode = information_.getAppealMode();
+        RET ret = information_->setAppealMode(receive_data[0]);
+        auto mode = information_->getAppealMode();
         transmsit_data[0] = (ret == RET_OK) ? 1 : 0;
         transmsit_data[1] = mode;
         setOrder(SetAppealMode + ACK, transmsit_data, LENGTH);
@@ -137,10 +137,10 @@ private:
         float manual_velocity, manual_omega;
         convertUint8ToFloat(&receive_data[0], &manual_velocity);
         convertUint8ToFloat(&receive_data[4], &manual_omega);
-        RET ret1 = information_.setManualVelocity(manual_velocity);
-        RET ret2 = information_.setManualOmega(manual_omega);
-        manual_velocity = information_.getManualVelocity();
-        manual_omega = information_.getManualOmega();
+        RET ret1 = information_->setManualVelocity(manual_velocity);
+        RET ret2 = information_->setManualOmega(manual_omega);
+        manual_velocity = information_->getManualVelocity();
+        manual_omega = information_->getManualOmega();
         transmsit_data[0] = (ret1 == RET_OK && ret2 == RET_OK) ? 1 : 0;
         convertFloatToUint8(&transmsit_data[1], &manual_velocity);
         convertFloatToUint8(&transmsit_data[5], &manual_omega);
@@ -152,7 +152,7 @@ private:
         uint8_t transmit_data[LENGTH];
         float manual_feed;
         convertUint8ToFloat(&receive_data[0], &manual_feed);
-        RET ret = information_.setManualFeed(manual_feed);
+        RET ret = information_->setManualFeed(manual_feed);
         transmit_data[0] = (ret == RET_OK) ? 1 : 0;
         convertFloatToUint8(&transmit_data[1], &manual_feed);
         setOrder(ManualFeed + ACK, transmit_data, LENGTH);
@@ -261,8 +261,8 @@ private:
   }
 
 public:
-  Communication(driver::WifiTCPClient *client, timer::UseTimer use_timer)
-      : client_(client), StateMachine() {
+  Communication(driver::WifiTCPClient *client, Information *information, timer::UseTimer use_timer)
+      : client_(client), information_(information), StateMachine() {
     timer_ = timer::createTimer(use_timer);
     for (int i = 0; i < CHECK_ACK_NUMBER; i++) {
       check_ack_timer_[i] = timer::createTimer(use_timer);
@@ -373,7 +373,5 @@ public:
     transmitRequestChangeState(main, sub);
     return RET_OK;
   }
-
-  const Information &getInformation() { return information_; }
 };
 }  // namespace communication

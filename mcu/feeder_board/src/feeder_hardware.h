@@ -61,7 +61,8 @@ public:
   Hardware() {}
   void init() {
     // なんでかわからないけど、picoを使った場合はここのwire.beginをコメントアウトしないと正常に動作しなかった
-    Wire.begin(16, 17, 100000);
+    // feeder側は使わないのでコメントアウト
+    // Wire.begin(16, 17, 100000);
     buzzer_.init();
     drv8835_.init();
     // 回転方向を反対向きに設定
