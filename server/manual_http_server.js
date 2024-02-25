@@ -4,6 +4,7 @@ const express = require('express');　// expressを準備
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const ip = "192.168.10.111";
 const port = 3000;
 
 // express に ejs のテンプレートエンジンを設定
@@ -22,6 +23,6 @@ app.post("/api/json", (req, res, next) => {
   res.json({});
 })
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.listen(port, ip, () => {
+  console.log(`Example app listening at http://${ip}:${port}`);
 })
