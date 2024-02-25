@@ -85,6 +85,33 @@
       }
     });
 
+    container.addEventListener('touchstart', () => {
+      console.log("press")
+      stickPressed = true;
+      event.preventDefault();
+      moveStick(event.clientX, event.clientY);
+    });
+
+    container.addEventListener('touchend', () => {
+      console.log("release")
+      stickPressed = false;
+      resetStickPosition();
+    });
+
+    window.addEventListener('touchend', () => {
+      console.log("release")
+      stickPressed = false;
+      resetStickPosition();
+    });
+
+
+    window.addEventListener('touchmove', () => {
+      if (stickPressed) {
+        event.preventDefault();
+        moveStick(event.touches[0].clientX, event.touches[0].clientY);
+      }
+    });
+
     function moveStick(mouseX, mouseY) {
       let containerRect = container.getBoundingClientRect();
       let radius = containerRect.width / 2;
