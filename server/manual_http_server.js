@@ -17,7 +17,21 @@ app.get("/", function(req, res) {
 app.use(cors())
 app.use(bodyParser.json());
 
+let is_client_connected = false;
+
+function clientTimeout() {
+  return setTimeout(() => {
+    is_client_connected = false;
+    console.log("client connect error");
+  }, 2000);
+}
+
+let timer_id = clientTimeout();
+
 app.post("/api/json", (req, res, next) => {
+  is_client_connected = true;
+  clearTimeout(timer_id);
+  timer_id = clientTimeout();
   // console.log(req.body)
   // ダミーデータを返却
   res.json({});
