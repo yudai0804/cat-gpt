@@ -45,6 +45,7 @@
 <p> このボタンを押すと給餌器から餌が出ます</p>
 <button id="feeder button" class="feeder-button">ボタン</button>
 <button id="test button">テストボタン</button>
+<div id="is connected">接続状況 OK</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -53,8 +54,11 @@
 
     let stickPressed = false;
 
+    let feeder_flag = false;
+
     document.getElementById("feeder button").addEventListener('click', () => {
       console.log("餌を出します")
+      feeder_flag = true;
     })
 
     document.getElementById("test button").addEventListener('click', () => {
@@ -130,6 +134,34 @@
       document.getElementById("velocity").textContent = "速度=0";
       document.getElementById("angular velocity").textContent = "角速度=0";
     }
+
+    setInterval(() => {
+      let xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            // レスポンスを表示する
+            // console.log(JSON.parse(xhr.responseText))
+            document.getElementById("is connected").textContent = "接続状況 OK";
+          } else {
+            document.getElementById("is connected").textContent = "接続状況 NG";
+            console.error('リクエストに失敗しました。ステータスコード:', xhr.status);
+          }
+        }
+      };
+
+      let json = {
+        velocity: document.getElementById("velocity").textContent.replace("速度=", ""),
+        angular_velocity: document.getElementById("angular velocity").textContent.replace("角速度=", ""),
+        feeder_flag: feeder_flag
+      }
+      xhr.open('POST', 'http://localhost:3000/api/json', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(json));
+      // feeder_flagをリセット
+      feeder_flag = false;
+
+    }, 50);
   });
 </script>
 

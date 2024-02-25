@@ -17,7 +17,7 @@ app.use(cors())
 app.use(bodyParser.json());
 
 app.post("/api/json", (req, res, next) => {
-  console.log(req.body)
+  // console.log(req.body)
   // ダミーデータを返却
   res.json({});
 })
