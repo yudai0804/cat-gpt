@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猫と遊ぶ</title>
+  <style>
+    #container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 2px solid #0000ff;
+      background-color: rgba(0, 0, 0, 0.5);
+      margin: 50px auto;
+    }
+    #stick {
+      position: absolute;
+      top: 50%; /* 親要素の中央に配置 */
+      left: 50%; /* 親要素の中央に配置 */
+      transform: translate(-50%, -50%); /* 中央揃え */
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+    }
+    .feeder-button {
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="container">
+  <div id="stick"></div>
+</div>
+<div id="velocity">速度=0</div>
+<div id="angular velocity">角速度=0</div>
+<p> このボタンを押すと給餌器から餌が出ます</p>
+<button id="feeder button" class="feeder-button">ボタン</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    let container = document.getElementById('container');
+    let stick = document.getElementById('stick');
+
+    let stickPressed = false;
+
+    document.getElementById("feeder button").addEventListener('click', () => {
+      console.log("餌を出します")
+    })
+
+    container.addEventListener('mousedown', () => {
+      console.log("press")
+      stickPressed = true;
+      moveStick(event.clientX, event.clientY);
+    });
+
+    container.addEventListener('mouseup', () => {
+      console.log("release")
+      stickPressed = false;
+      resetStickPosition();
+    });
+
+    window.addEventListener('mouseup', () => {
+      console.log("release")
+      stickPressed = false;
+      resetStickPosition();
+    });
+
+
+    window.addEventListener('mousemove', () => {
+      if (stickPressed) {
+        moveStick(event.clientX, event.clientY);
+      }
+    });
+
+    function moveStick(mouseX, mouseY) {
+      let containerRect = container.getBoundingClientRect();
+      let radius = containerRect.width / 2;
+      let stick_size = parseInt(window.getComputedStyle(stick).getPropertyValue('width'));
+      let stick_radius = stick_size / 2;
+      let x = containerRect.left + radius - mouseX;
+      let y = containerRect.top + radius  - mouseY;
+      let scalar = Math.sqrt(x * x + y * y);
+      let max = radius - stick_radius;
+      if(scalar > max) {
+        x = x / scalar * max;
+        y = y / scalar * max;
+      }
+      document.getElementById("velocity").textContent = "速度=" + y / max * 1.0;
+      document.getElementById("angular velocity").textContent = "角速度=" + x / max * 3.14;
+      let width_center = containerRect.width / 2;
+      let height_center = containerRect.height / 2;
+      let left = ((width_center - x) / containerRect.width * 100) + '%';
+      let top = ((height_center - y) / containerRect.height * 100) + '%';
+      stick.style.left = left;
+      stick.style.top = top;
+    }
+
+    function resetStickPosition() {
+      stick.style.left = '50%';
+      stick.style.top = '50%';
+      document.getElementById("velocity").textContent = "速度=0";
+      document.getElementById("angular velocity").textContent = "角速度=0";
+    }
+  });
+</script>
+
+</body>
+</html>
+
+
