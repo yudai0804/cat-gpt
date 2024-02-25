@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 
+#include "driver/switch.h"
 #include "rat.h"
 #include "state_machine/state.h"
 #include "timer/timer_1ms.h"
@@ -77,8 +78,14 @@ void idle_process() {
 }
 
 void no_connect_process() {
-  hardware.led_white_.blinkByFrequency(5);
-  hardware.led_red_.blinkByFrequency(0);
+  if (hardware.limit_switch_.getStatus() >= driver::DETECT_UNDER_100MS) {
+    hardware.led_white_.blinkByFrequency(0);
+    // hardware.led_red_.blinkByFrequency(5);
+    hardware.led_red_.on();
+  } else {
+    hardware.led_white_.blinkByFrequency(0);
+    hardware.led_red_.off();
+  }
 }
 void changing_state_process() {
 }
@@ -140,6 +147,7 @@ void finish_process() {
 namespace manual {
 
 void manual_process() {
+  printf("on manual v = %f, va = %f\r\n", information.getManualVelocity(), information.getManualOmega());
   hardware.runByVelocity(information.getManualVelocity(), information.getManualOmega());
   // printf("manual\r\n");
 }

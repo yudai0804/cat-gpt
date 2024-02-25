@@ -145,7 +145,7 @@ private:
         convertFloatToUint8(&transmsit_data[1], &manual_velocity);
         convertFloatToUint8(&transmsit_data[5], &manual_omega);
         setOrder(ManualMove + ACK, transmsit_data, LENGTH);
-        printf("velocity = %f, angular_velocity = %f\r\n", manual_velocity, manual_omega);
+        // printf("velocity = %f, angular_velocity = %f\r\n", manual_velocity, manual_omega);
       } break;
       case ManualFeed: {
         constexpr uint8_t LENGTH = 5;
@@ -157,7 +157,7 @@ private:
         transmit_data[0] = (ret == RET_OK) ? 1 : 0;
         convertFloatToUint8(&transmit_data[1], &manual_feed);
         setOrder(ManualFeed + ACK, transmit_data, LENGTH);
-        printf("feed = %f\r\n", manual_feed);
+        // printf("feed = %f\r\n", manual_feed);
       } break;
       case StartBuzzer: {
         // TODO: 実装する
