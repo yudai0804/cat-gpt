@@ -142,13 +142,16 @@ namespace manual {
 void manual_process() {
   if (information.getIsStartManualFeed()) {
     hardware.led_red_.blinkByFrequency(1);
+    hardware.drv8835_.outputA(0.5f);
     printf("manual feed start, quantity = %f\r\n", information.getManualFeed());
     uint32_t delay = (uint32_t)(information.getManualFeed() * 1000);
     vTaskDelay(delay);
     // clear
     information.setIsStartManualFeed(false);
     hardware.led_red_.blinkByFrequency(0);
+    hardware.drv8835_.outputA(0.5f);
   } else {
+    hardware.drv8835_.outputA(0);
     hardware.led_red_.blinkByFrequency(0);
   }
 }
